@@ -1,0 +1,925 @@
+/* ============================================
+   Golf Camera - Shared Styles
+   ============================================ */
+
+/* ============================================
+   1. CSS Reset
+   ============================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ============================================
+   2. Base Styles
+   ============================================ */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* ============================================
+   3. Layout Containers
+   ============================================ */
+.container {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+/* ============================================
+   4. Typography
+   ============================================ */
+h1 {
+    color: #333;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+h2 {
+    color: #333;
+    font-size: 1.5em;
+    margin-bottom: 15px;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 1.1em;
+}
+
+/* ============================================
+   5. Buttons
+   ============================================ */
+.button,
+.nav-button {
+    padding: 15px 25px;
+    font-size: 1em;
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: inline-block;
+}
+
+.button:hover:not(:disabled),
+.nav-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+.button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.button-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.button-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.button-secondary {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.button-secondary:hover {
+    background: #e0e0e0;
+}
+
+.button-success {
+    background: #10b981;
+    color: white;
+}
+
+.button-success:hover {
+    background: #059669;
+}
+
+.record-button {
+    width: 100%;
+    padding: 25px;
+    font-size: 1.5em;
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+}
+
+.record-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+.record-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.record-button.recording {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    animation: pulse 2s infinite;
+}
+
+.download-button {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.download-button:hover {
+    background: #764ba2;
+}
+
+.delete-button {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.delete-button:hover {
+    background: #c9302c;
+}
+
+.back-button {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.back-button:hover {
+    background: #764ba2;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.speed-button {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+
+.speed-button:hover {
+    background: #764ba2;
+}
+
+.speed-button.active {
+    background: #764ba2;
+    font-weight: bold;
+}
+
+/* ============================================
+   6. Forms
+   ============================================ */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    color: #666;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.95em;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.form-group small {
+    display: block;
+    color: #999;
+    margin-top: 5px;
+    font-size: 0.85em;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    cursor: pointer;
+}
+
+.control-group {
+    margin-bottom: 25px;
+}
+
+.control-group label {
+    display: block;
+    color: #666;
+    font-size: 0.9em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.control-group input[type="range"] {
+    width: 100%;
+    height: 8px;
+    border-radius: 5px;
+    background: #d3d3d3;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.control-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    cursor: pointer;
+}
+
+.control-group input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    cursor: pointer;
+    border: none;
+}
+
+.value-display {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    font-size: 1.1em;
+}
+
+.value-current {
+    color: #333;
+    font-weight: bold;
+}
+
+.value-range {
+    color: #999;
+    font-size: 0.85em;
+}
+
+.help-text {
+    color: #666;
+    font-size: 0.85em;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.file-upload {
+    border: 2px dashed #e0e0e0;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.file-upload:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.file-upload input[type="file"] {
+    display: none;
+}
+
+.file-upload-label {
+    cursor: pointer;
+    color: #667eea;
+    font-weight: bold;
+}
+
+/* ============================================
+   7. Messages & Alerts
+   ============================================ */
+.message {
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    text-align: center;
+    animation: slideIn 0.3s ease;
+}
+
+.message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.message.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* ============================================
+   8. Status & Badges
+   ============================================ */
+.status {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.status-item {
+    text-align: center;
+}
+
+.status-label {
+    color: #666;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+
+.status-value {
+    color: #333;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.status-badge.success {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-badge.warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-badge.error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-indicator {
+    background: #28a745;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+/* ============================================
+   9. Mode Cards
+   ============================================ */
+.mode-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.mode-card:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.mode-card.active {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    border-width: 3px;
+}
+
+.mode-card.active::before {
+    content: '✓';
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    color: #667eea;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.mode-icon {
+    font-size: 2em;
+    margin-bottom: 8px;
+}
+
+.mode-name {
+    font-weight: bold;
+    color: #333;
+    font-size: 0.95em;
+    margin-bottom: 4px;
+}
+
+.mode-specs {
+    color: #666;
+    font-size: 0.8em;
+}
+
+/* ============================================
+   10. Recordings
+   ============================================ */
+.recordings {
+    margin-top: 30px;
+}
+
+.recording-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.recording-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.recording-item:hover {
+    background: #e9ecef;
+    transform: translateX(5px);
+}
+
+.recording-info {
+    flex: 1;
+}
+
+.recording-name {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.recording-meta {
+    color: #666;
+    font-size: 0.85em;
+}
+
+/* ============================================
+   11. Video Player
+   ============================================ */
+.video-player {
+    width: 100%;
+    margin-bottom: 20px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    display: none;
+}
+
+.video-player video {
+    width: 100%;
+    display: block;
+    background: #000;
+}
+
+.video-controls {
+    background: #f8f9fa;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.speed-control {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.video-container {
+    background: #000;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 4/3;
+}
+
+#video-feed {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* ============================================
+   12. Settings Page Specific
+   ============================================ */
+.settings-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.settings-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.settings-card h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+
+.setup-steps {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.setup-steps ol {
+    margin-left: 20px;
+    line-height: 1.8;
+}
+
+.setup-steps li {
+    margin-bottom: 10px;
+}
+
+.setup-steps a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.setup-steps a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================
+   13. Preview Page Specific
+   ============================================ */
+.content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+}
+
+.controls-panel {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 25px;
+}
+
+.controls-panel h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+/* ============================================
+   14. Utility Classes
+   ============================================ */
+.empty-state {
+    text-align: center;
+    color: #999;
+    padding: 40px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* ============================================
+   15. Animations
+   ============================================ */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   16. Utility Classes
+   ============================================ */
+
+/* Layout utilities */
+.flex-1 {
+    flex: 1;
+}
+
+.flex-row {
+    display: flex;
+    gap: 10px;
+}
+
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.flex-between-mb {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.grid-2col-mb {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+/* Spacing utilities */
+.mt-10 {
+    margin-top: 10px;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.mt-30 {
+    margin-top: 30px;
+}
+
+.mb-0 {
+    margin-bottom: 0;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+/* Text utilities */
+.text-label {
+    font-weight: bold;
+    color: #333;
+}
+
+.text-meta {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.text-small {
+    color: #999;
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+.section-description {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* Info/Warning boxes */
+.info-box {
+    margin-top: 30px;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid;
+}
+
+.info-box.warning {
+    background: #fff3cd;
+    border-left-color: #ffc107;
+}
+
+.info-box.warning strong,
+.info-box.warning p {
+    color: #856404;
+}
+
+.info-box.warning p {
+    margin-top: 5px;
+    font-size: 0.9em;
+}
+
+.info-box.success {
+    background: #d4edda;
+    border-left-color: #28a745;
+}
+
+.info-box.success strong,
+.info-box.success div {
+    color: #155724;
+}
+
+.info-box div {
+    margin-top: 8px;
+    font-size: 0.95em;
+}
+
+/* Test button styling */
+.test-button {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.test-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.test-result {
+    margin-top: 15px;
+    padding: 15px;
+    background: #d4edda;
+    border-radius: 8px;
+    border-left: 4px solid #28a745;
+}
+
+.test-result strong,
+.test-result div {
+    color: #155724;
+}
+
+.test-result.error {
+    background: #f8d7da;
+    border-left-color: #dc3545;
+}
+
+.test-result.error strong,
+.test-result.error div {
+    color: #721c24;
+}
+
+/* ============================================
+   17. Responsive Design
+   ============================================ */
+@media (max-width: 900px) {
+    .content {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 2em;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .form-row,
+    .grid-2col,
+    .grid-2col-mb {
+        grid-template-columns: 1fr;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .nav-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+}

@@ -4,296 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Golf Swing Camera</title>
+    <link rel="stylesheet" href="/static/css/main.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        /* Page-specific styles for index.html */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-        }
-        
-        .container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 800px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-        
-        .container > div:first-child {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 2.5em;
-        }
-        
-        .subtitle {
-            color: #666;
-            font-size: 1.1em;
-        }
-        
-        .status {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .status-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .status-item {
-            text-align: center;
-        }
-        
-        .status-label {
-            color: #666;
-            font-size: 0.85em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
-        }
-        
-        .status-value {
-            color: #333;
-            font-size: 1.5em;
-            font-weight: bold;
-        }
-        
-        .record-button {
-            width: 100%;
-            padding: 25px;
-            font-size: 1.5em;
-            font-weight: bold;
-            color: white;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 20px;
-        }
-        
-        .record-button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-        }
-        
-        .record-button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
-        .record-button.recording {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        .recordings {
-            margin-top: 30px;
-        }
-        
-        .recordings h2 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.5em;
-        }
-        
-        .recording-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .recording-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s ease;
-        }
-        
-        .recording-item:hover {
-            background: #e9ecef;
-            transform: translateX(5px);
-        }
-        
-        .recording-info {
-            flex: 1;
-        }
-        
-        .recording-name {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        
-        .recording-meta {
-            color: #666;
-            font-size: 0.85em;
-        }
-        
-        .download-button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s ease;
-        }
-        
-        .download-button:hover {
-            background: #764ba2;
-        }
-        
-        .delete-button {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s ease;
-        }
-        
-        .delete-button:hover {
-            background: #c9302c;
-        }
-        
-        .message {
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-weight: 500;
-            text-align: center;
-            animation: slideIn 0.3s ease;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .empty-state {
-            text-align: center;
-            color: #999;
-            padding: 40px;
-        }
-
-        .video-player {
-            width: 100%;
-            margin-bottom: 20px;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            display: none;
-        }
-
-        .video-player video {
-            width: 100%;
-            display: block;
-            background: #000;
-        }
-
-        .video-controls {
-            background: #f8f9fa;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .speed-control {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .speed-button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: all 0.2s ease;
-        }
-
-        .speed-button:hover {
-            background: #764ba2;
-        }
-
-        .speed-button.active {
-            background: #764ba2;
-            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div>
-            <div style="flex: 1;">
+        <div class="header">
+            <div class="flex-1">
                 <h1>📹 Impact Camera</h1>
                 <p class="subtitle">Capture fast motion in high-speed detail</p>
             </div>
-            <div style="display: flex; gap: 10px;">
-                <a href="/preview" class="record-button" style="width: auto; padding: 15px 25px; font-size: 1em; margin: 0;">
-                    👁️ Live Preview
-                </a>
-                <a href="/settings" class="record-button" style="width: auto; padding: 15px 25px; font-size: 1em; margin: 0;">
-                    ⚙️ Settings
-                </a>
+            <div class="nav-buttons">
+                <a href="/preview" class="nav-button">👁️ Live Preview</a>
+                <a href="/settings" class="nav-button">⚙️ Settings</a>
             </div>
         </div>
         
@@ -325,21 +55,21 @@
             <video id="replayVideo" loop muted playsinline></video>
             <div class="video-controls">
                 <div class="speed-control">
-                    <span style="font-weight: bold; color: #333;">Playback Speed:</span>
+                    <span class="text-label">Playback Speed:</span>
                     <button class="speed-button" onclick="setPlaybackSpeed(0.25)">0.25x</button>
                     <button class="speed-button active" onclick="setPlaybackSpeed(0.5)">0.5x</button>
                     <button class="speed-button" onclick="setPlaybackSpeed(1.0)">1x</button>
                 </div>
-                <div style="color: #666; font-size: 0.9em;" id="videoInfo">-</div>
+                <div class="text-meta" id="videoInfo">-</div>
             </div>
         </div>
 
         <button id="recordButton" class="record-button">🎥 Record</button>
         
         <div class="recordings">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0;">Recent Recordings</h2>
-                <button id="deleteAllButton" class="delete-button" onclick="deleteAllRecordings()" style="display: none;">
+            <div class="flex-between-mb">
+                <h2 class="mb-0">Recent Recordings</h2>
+                <button id="deleteAllButton" class="delete-button hidden" onclick="deleteAllRecordings()">
                     🗑️ Delete All
                 </button>
             </div>
@@ -380,24 +110,24 @@
                 
                 if (data.recordings.length === 0) {
                     listElement.innerHTML = '<div class="empty-state">No recordings yet. Press the button above to capture your first swing!</div>';
-                    document.getElementById('deleteAllButton').style.display = 'none';
+                    document.getElementById('deleteAllButton').classList.add('hidden');
                     return;
                 }
-                
+
                 const deleteAllButton = document.getElementById('deleteAllButton');
-                deleteAllButton.style.display = 'block';
-                
+                deleteAllButton.classList.remove('hidden');
+
                 listElement.innerHTML = data.recordings.reverse().map(rec => {
                     const sizeMB = (rec.size / 1024 / 1024).toFixed(2);
                     const date = new Date(rec.created * 1000).toLocaleString();
-                    
+
                     return `
                         <div class="recording-item">
                             <div class="recording-info">
                                 <div class="recording-name">${rec.name}</div>
                                 <div class="recording-meta">${sizeMB} MB · ${date}</div>
                             </div>
-                            <div style="display: flex; gap: 10px;">
+                            <div class="flex-row">
                                 <button class="download-button" onclick="downloadRecording('${rec.name}')">
                                     ⬇️ Download
                                 </button>
@@ -509,7 +239,6 @@
                 if (data.status === 'success') {
                     showMessage(`Deleted ${data.count} recording(s)`);
                     loadRecordings();
-                    document.getElementById('deleteAllButton').style.display = 'none';
                 } else {
                     showMessage(data.message || 'Failed to delete recordings', 'error');
                 }

@@ -4,341 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Golf Swing Camera</title>
+    <link rel="stylesheet" href="/static/css/main.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
+        /* Page-specific styles for settings.html */
         .container {
             max-width: 1000px;
-            margin: 0 auto;
         }
-        
+
         .header {
             background: white;
             border-radius: 15px;
             padding: 20px 30px;
             margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
-        
+
         .header h1 {
-            color: #333;
             font-size: 1.8em;
-        }
-        
-        .back-button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            text-decoration: none;
-            display: inline-block;
-        }
-        
-        .back-button:hover {
-            background: #764ba2;
-        }
-        
-        .settings-grid {
-            display: grid;
-            gap: 20px;
-        }
-        
-        .settings-card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-        
-        .settings-card h2 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 10px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            color: #666;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 0.95em;
-        }
-        
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .form-group small {
-            display: block;
-            color: #999;
-            margin-top: 5px;
-            font-size: 0.85em;
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .button {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 1em;
-        }
-        
-        .button-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .button-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .button-secondary {
-            background: #f0f0f0;
-            color: #333;
-        }
-        
-        .button-secondary:hover {
-            background: #e0e0e0;
-        }
-        
-        .button-success {
-            background: #10b981;
-            color: white;
-        }
-        
-        .button-success:hover {
-            background: #059669;
-        }
-        
-        .button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: bold;
-            margin-left: 10px;
-        }
-        
-        .status-badge.success {
-            background: #d1fae5;
-            color: #065f46;
-        }
-        
-        .status-badge.warning {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        
-        .status-badge.error {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-        
-        .message {
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-weight: 500;
-            animation: slideIn 0.3s ease;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .message.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        
-        .file-upload {
-            border: 2px dashed #e0e0e0;
-            border-radius: 8px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .file-upload:hover {
-            border-color: #667eea;
-            background: #f8f9ff;
-        }
-        
-        .file-upload input[type="file"] {
-            display: none;
-        }
-        
-        .file-upload-label {
-            cursor: pointer;
-            color: #667eea;
-            font-weight: bold;
-        }
-        
-        .setup-steps {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        
-        .setup-steps ol {
-            margin-left: 20px;
-            line-height: 1.8;
-        }
-        
-        .setup-steps li {
-            margin-bottom: 10px;
-        }
-        
-        .setup-steps a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        
-        .setup-steps a:hover {
-            text-decoration: underline;
-        }
-        
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .checkbox-group input[type="checkbox"] {
-            width: auto;
-            cursor: pointer;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        /* Mode Card Styles */
-        .mode-card {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .mode-card:hover {
-            border-color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
-        }
-
-        .mode-card.active {
-            border-color: #667eea;
-            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
-            border-width: 3px;
-        }
-
-        .mode-card.active::before {
-            content: '✓';
-            position: absolute;
-            top: 5px;
-            right: 8px;
-            color: #667eea;
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-
-        .mode-icon {
-            font-size: 2em;
-            margin-bottom: 8px;
-        }
-
-        .mode-name {
-            font-weight: bold;
-            color: #333;
-            font-size: 0.95em;
-            margin-bottom: 4px;
         }
 
         .mode-specs {
-            color: #666;
             font-size: 0.75em;
             line-height: 1.4;
         }
@@ -357,9 +42,9 @@
             <!-- Camera Mode Selection -->
             <div class="settings-card">
                 <h2>📹 Camera Mode</h2>
-                <p style="color: #666; margin-bottom: 20px;">Select optimized camera configuration (resolution, FPS, shutter speed)</p>
+                <p class="section-description">Select optimized camera configuration (resolution, FPS, shutter speed)</p>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div class="grid-2col-mb">
                     <div class="mode-card" data-mode="golf_swing" onclick="selectCameraMode('golf_swing')">
                         <div class="mode-icon">⛳</div>
                         <div class="mode-name">Golf Swing</div>
@@ -394,7 +79,7 @@
             <!-- Recording Settings -->
             <div class="settings-card">
                 <h2>⏱️ Recording Settings</h2>
-                <p style="color: #666; margin-bottom: 20px;">Configure how recordings are captured and stored</p>
+                <p class="section-description">Configure how recordings are captured and stored</p>
 
                 <form id="recordingSettingsForm">
                     <div class="form-row">
@@ -443,7 +128,7 @@
                         <label for="credentialsFile" class="file-upload-label">
                             📁 Click to upload gdrive_credentials.json
                         </label>
-                        <p style="color: #999; margin-top: 10px; font-size: 0.9em;">
+                        <p class="text-small">
                             <span id="credentialsStatus">No file uploaded</span>
                         </p>
                     </div>
@@ -458,7 +143,7 @@
                     </button>
                 </div>
                 
-                <div class="form-group" style="margin-top: 20px;">
+                <div class="form-group mt-20">
                     <label for="upload_destination">Upload Destination</label>
                     <input type="text" id="upload_destination" name="upload_destination" placeholder="gdrive://folder_id">
                     <small>After authentication, folder ID will be auto-filled</small>
@@ -471,7 +156,7 @@
                     </div>
                 </div>
                 
-                <div class="button-group" style="margin-top: 20px;">
+                <div class="button-group mt-20">
                     <button id="saveUploadSettings" class="button button-primary">💾 Save Upload Settings</button>
                 </div>
             </div>
