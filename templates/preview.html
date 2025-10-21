@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Preview - High-Speed Camera</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-button {
+            padding: 15px 25px;
+            font-size: 1em;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .video-container {
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            aspect-ratio: 4/3;
+        }
+
+        #video-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .controls-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+        }
+
+        .controls-panel h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group label {
+            display: block;
+            color: #666;
+            font-size: 0.9em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+        }
+
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            border: none;
+        }
+
+        .value-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 1.1em;
+        }
+
+        .value-current {
+            color: #333;
+            font-weight: bold;
+        }
+
+        .value-range {
+            color: #999;
+            font-size: 0.85em;
+        }
+
+        .help-text {
+            color: #666;
+            font-size: 0.85em;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .mode-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .mode-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .mode-card.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-width: 3px;
+        }
+
+        .mode-card.active::before {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .mode-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+
+        .mode-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 0.95em;
+            margin-bottom: 4px;
+        }
+
+        .mode-specs {
+            color: #666;
+            font-size: 0.8em;
+        }
+
+        .status-indicator {
+            background: #28a745;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Live Preview</h1>
+            <div class="nav-buttons">
+                <a href="/" class="nav-button">Home</a>
+                <a href="/settings" class="nav-button">Settings</a>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="video-container">
+                <img id="video-feed" src="/video_feed" alt="Live camera feed">
+            </div>
+
+            <div class="controls-panel">
+                <h2>Camera Controls</h2>
+                <div class="status-indicator">LIVE</div>
+
+                <div class="control-group">
+                    <label>Recording Mode</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                        <div class="mode-card" data-mode="golf_swing" onclick="selectMode('golf_swing')">
+                            <div class="mode-icon">⛳</div>
+                            <div class="mode-name">Golf Swing</div>
+                            <div class="mode-specs">728x544 @ 120fps</div>
+                        </div>
+                        <div class="mode-card" data-mode="golf_impact" onclick="selectMode('golf_impact')">
+                            <div class="mode-icon">💥</div>
+                            <div class="mode-name">Impact</div>
+                            <div class="mode-specs">512x384 @ 240fps</div>
+                        </div>
+                        <div class="mode-card" data-mode="max_detail" onclick="selectMode('max_detail')">
+                            <div class="mode-icon">📸</div>
+                            <div class="mode-name">Max Detail</div>
+                            <div class="mode-specs">1456x1088 @ 60fps</div>
+                        </div>
+                        <div class="mode-card" data-mode="standard" onclick="selectMode('standard')">
+                            <div class="mode-icon">🎥</div>
+                            <div class="mode-name">Standard</div>
+                            <div class="mode-specs">1280x720 @ 90fps</div>
+                        </div>
+                    </div>
+                    <div class="help-text">Click a mode to reconfigure camera</div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <button id="test-fps-button" style="width: 100%; padding: 15px; font-size: 1.1em; font-weight: bold; color: white; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s ease;">
+                        Test Max FPS
+                    </button>
+                    <div id="fps-test-result" style="display: none; margin-top: 15px; padding: 15px; background: #d4edda; border-radius: 8px; border-left: 4px solid #28a745;">
+                        <strong style="color: #155724;">Test Results:</strong>
+                        <div id="fps-result-content" style="color: #155724; margin-top: 8px; font-size: 0.95em;"></div>
+                    </div>
+                    <div style="margin-top: 10px; color: #666; font-size: 0.85em; font-style: italic;">
+                        Tests actual FPS without streaming overhead (captures for 3 seconds)<br>
+                        Video will pause automatically during test and restart after
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; padding: 15px; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+                    <strong style="color: #856404;">Note:</strong>
+                    <p style="color: #856404; margin-top: 5px; font-size: 0.9em;">
+                        These settings update the live preview only. Use the Settings page to save permanent changes.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mode presets
+        const modes = {
+            golf_swing: { width: 728, height: 544, fps: 120, shutter_speed: 1000, duration: 3, auto_exposure: true },
+            golf_impact: { width: 512, height: 384, fps: 240, shutter_speed: 500, duration: 2, auto_exposure: true },
+            max_detail: { width: 1456, height: 1088, fps: 60, shutter_speed: 2000, duration: 5, auto_exposure: true },
+            standard: { width: 1280, height: 720, fps: 90, shutter_speed: 1500, duration: 3, auto_exposure: true }
+        };
+
+        // Select mode and reconfigure camera
+        async function selectMode(modeName) {
+            const mode = modes[modeName];
+            if (!mode) return;
+
+            // Mark as active
+            document.querySelectorAll('.mode-card').forEach(card => card.classList.remove('active'));
+            document.querySelector(`[data-mode="${modeName}"]`).classList.add('active');
+
+            try {
+                // Get current config first
+                const configResp = await fetch('/api/config');
+                const configData = await configResp.json();
+
+                // Merge with mode settings
+                const newConfig = { ...configData.config, ...mode };
+
+                // Apply new config
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newConfig)
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    console.log(`Switched to ${modeName} mode`);
+                    // Reload video stream
+                    location.reload();
+                } else {
+                    alert(`Failed to switch mode: ${data.message}`);
+                }
+            } catch (error) {
+                console.error('Mode switch failed:', error);
+                alert(`Error switching mode: ${error}`);
+            }
+        }
+
+        // Detect current mode on load
+        function detectCurrentMode() {
+            fetch('/api/config')
+                .then(resp => resp.json())
+                .then(data => {
+                    const config = data.config;
+                    // Find matching mode
+                    for (const [modeName, modeConfig] of Object.entries(modes)) {
+                        if (config.width === modeConfig.width &&
+                            config.height === modeConfig.height &&
+                            config.fps === modeConfig.fps) {
+                            document.querySelector(`[data-mode="${modeName}"]`)?.classList.add('active');
+                            break;
+                        }
+                    }
+                });
+        }
+
+        detectCurrentMode();
+
+        // Test Max FPS button
+        const testFpsButton = document.getElementById('test-fps-button');
+        const fpsTestResult = document.getElementById('fps-test-result');
+        const fpsResultContent = document.getElementById('fps-result-content');
+
+        testFpsButton.addEventListener('click', function() {
+            // Disable button and show loading state
+            testFpsButton.disabled = true;
+            testFpsButton.textContent = 'Pausing video...';
+            fpsTestResult.style.display = 'none';
+
+            // Stop the video stream by setting the src to empty
+            const videoFeed = document.getElementById('video-feed');
+            const originalSrc = videoFeed.src;
+            videoFeed.src = '';
+
+            // Wait a moment for the stream to stop, then run the test
+            setTimeout(() => {
+                testFpsButton.textContent = 'Testing... (3 seconds)';
+
+                fetch('/api/test-max-fps', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        fpsResultContent.innerHTML = `
+                            <strong>Achieved FPS: ${data.actual_fps.toFixed(1)}</strong><br>
+                            <span style="font-size: 0.9em;">
+                                Target: ${data.target_fps} FPS<br>
+                                Frames captured: ${data.frames_captured}<br>
+                                Test duration: ${data.duration.toFixed(2)}s<br>
+                                Resolution: ${data.resolution}
+                            </span>
+                        `;
+                        fpsTestResult.style.display = 'block';
+                        fpsTestResult.style.background = '#d4edda';
+                        fpsTestResult.style.borderLeftColor = '#28a745';
+                    } else {
+                        fpsResultContent.innerHTML = `<strong style="color: #721c24;">Error:</strong> ${data.message}`;
+                        fpsTestResult.style.background = '#f8d7da';
+                        fpsTestResult.style.borderLeftColor = '#dc3545';
+                        fpsTestResult.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    fpsResultContent.innerHTML = `<strong style="color: #721c24;">Error:</strong> ${error.message}`;
+                    fpsTestResult.style.background = '#f8d7da';
+                    fpsTestResult.style.borderLeftColor = '#dc3545';
+                    fpsTestResult.style.display = 'block';
+                })
+                .finally(() => {
+                    testFpsButton.disabled = false;
+                    testFpsButton.textContent = 'Test Max FPS';
+                    // Restart video stream
+                    videoFeed.src = originalSrc;
+                });
+            }, 500); // Wait 500ms for video stream to fully stop
+        });
+    </script>
+</body>
+</html>

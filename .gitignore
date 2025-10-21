@@ -1,0 +1,40 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+recordings/
+*.h264
+*.mp4
+
+# Log files
+*.log
+
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+config.local.json
+.env
+.env.local
+private_config.sh
+
+# Google Drive credentials (keep these private!)
+gdrive_credentials.json
+gdrive_token.pickle
+
+# Claude Code local settings
+.claude/
+
+# Playwright screenshots (optional - remove this line if you want to commit them)
+.playwright-mcp/
+

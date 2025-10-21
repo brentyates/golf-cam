@@ -1,0 +1,49 @@
+{
+  "_comments": {
+    "description": "Recording presets for different use cases",
+    "usage": "Load these via the settings page or copy to config.json"
+  },
+  "presets": {
+    "standard": {
+      "name": "Standard (60 FPS)",
+      "description": "Full resolution, standard frame rate - best quality",
+      "width": 1456,
+      "height": 1088,
+      "fps": 60,
+      "shutter_speed": 2000,
+      "duration": 3
+    },
+    "slow_motion": {
+      "name": "Slow Motion (120 FPS)",
+      "description": "Half resolution, 2x slow-mo - balanced quality & speed",
+      "width": 728,
+      "height": 544,
+      "fps": 120,
+      "shutter_speed": 1000,
+      "duration": 3
+    },
+    "ultra_slow_motion": {
+      "name": "Ultra Slow Motion (240 FPS)",
+      "description": "Quarter resolution, 4x slow-mo - extreme slow motion",
+      "width": 512,
+      "height": 384,
+      "fps": 240,
+      "shutter_speed": 500,
+      "duration": 2
+    },
+    "extreme_slow_motion": {
+      "name": "Extreme Slow Motion (400+ FPS)",
+      "description": "Very small frame, 6-7x slow-mo - maximum speed",
+      "width": 672,
+      "height": 128,
+      "fps": 400,
+      "shutter_speed": 250,
+      "duration": 2
+    }
+  },
+  "recommended": {
+    "golf_impact": "ultra_slow_motion",
+    "golf_swing": "slow_motion",
+    "general_use": "standard"
+  }
+}

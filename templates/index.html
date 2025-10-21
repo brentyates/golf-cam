@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golf Swing Camera</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .container > div:first-child {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .status {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .status-item {
+            text-align: center;
+        }
+        
+        .status-label {
+            color: #666;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        
+        .status-value {
+            color: #333;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        .record-button {
+            width: 100%;
+            padding: 25px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        
+        .record-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .record-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .record-button.recording {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .recordings {
+            margin-top: 30px;
+        }
+        
+        .recordings h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .recording-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .recording-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        
+        .recording-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .recording-info {
+            flex: 1;
+        }
+        
+        .recording-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .recording-meta {
+            color: #666;
+            font-size: 0.85em;
+        }
+        
+        .download-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        
+        .download-button:hover {
+            background: #764ba2;
+        }
+        
+        .delete-button {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        
+        .delete-button:hover {
+            background: #c9302c;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            text-align: center;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+
+        .video-player {
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+
+        .video-player video {
+            width: 100%;
+            display: block;
+            background: #000;
+        }
+
+        .video-controls {
+            background: #f8f9fa;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .speed-control {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .speed-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+        }
+
+        .speed-button:hover {
+            background: #764ba2;
+        }
+
+        .speed-button.active {
+            background: #764ba2;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div>
+            <div style="flex: 1;">
+                <h1>📹 Impact Camera</h1>
+                <p class="subtitle">Capture fast motion in high-speed detail</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="/preview" class="record-button" style="width: auto; padding: 15px 25px; font-size: 1em; margin: 0;">
+                    👁️ Live Preview
+                </a>
+                <a href="/settings" class="record-button" style="width: auto; padding: 15px 25px; font-size: 1em; margin: 0;">
+                    ⚙️ Settings
+                </a>
+            </div>
+        </div>
+        
+        <div id="message"></div>
+        
+        <div class="status">
+            <h3>Camera Status</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-label">Resolution</div>
+                    <div class="status-value" id="resolution">-</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Frame Rate</div>
+                    <div class="status-value" id="fps">-</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Duration</div>
+                    <div class="status-value" id="duration">-</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Shutter</div>
+                    <div class="status-value" id="shutter">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="videoPlayer" class="video-player">
+            <video id="replayVideo" loop muted playsinline></video>
+            <div class="video-controls">
+                <div class="speed-control">
+                    <span style="font-weight: bold; color: #333;">Playback Speed:</span>
+                    <button class="speed-button" onclick="setPlaybackSpeed(0.25)">0.25x</button>
+                    <button class="speed-button active" onclick="setPlaybackSpeed(0.5)">0.5x</button>
+                    <button class="speed-button" onclick="setPlaybackSpeed(1.0)">1x</button>
+                </div>
+                <div style="color: #666; font-size: 0.9em;" id="videoInfo">-</div>
+            </div>
+        </div>
+
+        <button id="recordButton" class="record-button">🎥 Record</button>
+        
+        <div class="recordings">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">Recent Recordings</h2>
+                <button id="deleteAllButton" class="delete-button" onclick="deleteAllRecordings()" style="display: none;">
+                    🗑️ Delete All
+                </button>
+            </div>
+            <div id="recordingList" class="recording-list">
+                <div class="empty-state">No recordings yet. Press the button above to capture your first swing!</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let isRecording = false;
+        let statusInterval;
+        let currentPlaybackSpeed = 0.5;
+        
+        async function updateStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                document.getElementById('resolution').textContent = data.config.resolution;
+                document.getElementById('fps').textContent = data.config.fps + ' fps';
+                document.getElementById('duration').textContent = data.config.duration + 's';
+                document.getElementById('shutter').textContent = '1/' + Math.round(1000000 / data.config.shutter_speed) + 's';
+                
+                isRecording = data.recording;
+                updateRecordButton();
+            } catch (error) {
+                console.error('Failed to update status:', error);
+            }
+        }
+        
+        async function loadRecordings() {
+            try {
+                const response = await fetch('/api/recordings');
+                const data = await response.json();
+                
+                const listElement = document.getElementById('recordingList');
+                
+                if (data.recordings.length === 0) {
+                    listElement.innerHTML = '<div class="empty-state">No recordings yet. Press the button above to capture your first swing!</div>';
+                    document.getElementById('deleteAllButton').style.display = 'none';
+                    return;
+                }
+                
+                const deleteAllButton = document.getElementById('deleteAllButton');
+                deleteAllButton.style.display = 'block';
+                
+                listElement.innerHTML = data.recordings.reverse().map(rec => {
+                    const sizeMB = (rec.size / 1024 / 1024).toFixed(2);
+                    const date = new Date(rec.created * 1000).toLocaleString();
+                    
+                    return `
+                        <div class="recording-item">
+                            <div class="recording-info">
+                                <div class="recording-name">${rec.name}</div>
+                                <div class="recording-meta">${sizeMB} MB · ${date}</div>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="download-button" onclick="downloadRecording('${rec.name}')">
+                                    ⬇️ Download
+                                </button>
+                                <button class="delete-button" onclick="deleteRecording('${rec.name}')">
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Failed to load recordings:', error);
+            }
+        }
+        
+        function updateRecordButton() {
+            const button = document.getElementById('recordButton');
+            
+            if (isRecording) {
+                button.textContent = '🔴 Recording...';
+                button.classList.add('recording');
+                button.disabled = true;
+            } else {
+                button.textContent = '🎥 Record Swing';
+                button.classList.remove('recording');
+                button.disabled = false;
+            }
+        }
+        
+        function showMessage(text, type = 'success') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            
+            setTimeout(() => {
+                messageDiv.className = '';
+                messageDiv.textContent = '';
+            }, 5000);
+        }
+        
+        async function startRecording() {
+            try {
+                const response = await fetch('/api/record', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showMessage(`Recording started! Will capture for ${data.duration} seconds...`);
+
+                    setTimeout(() => {
+                        loadRecordings();
+                        showMessage('Recording complete! ✓');
+                        playLatestRecording();
+                    }, data.duration * 1000 + 1000);
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Failed to start recording', 'error');
+                console.error('Recording error:', error);
+            }
+        }
+        
+        function downloadRecording(filename) {
+            window.location.href = `/api/download/${filename}`;
+        }
+        
+        async function deleteRecording(filename) {
+            if (!confirm(`Delete ${filename}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/recordings/${filename}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showMessage(`Deleted ${filename}`);
+                    loadRecordings();
+                } else {
+                    showMessage(data.message || 'Failed to delete recording', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to delete recording:', error);
+                showMessage('Failed to delete recording', 'error');
+            }
+        }
+        
+        async function deleteAllRecordings() {
+            if (!confirm('Delete ALL recordings? This cannot be undone!')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/recordings', {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showMessage(`Deleted ${data.count} recording(s)`);
+                    loadRecordings();
+                    document.getElementById('deleteAllButton').style.display = 'none';
+                } else {
+                    showMessage(data.message || 'Failed to delete recordings', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to delete all recordings:', error);
+                showMessage('Failed to delete recordings', 'error');
+            }
+        }
+        
+        async function playLatestRecording() {
+            try {
+                const response = await fetch('/api/recordings');
+                const data = await response.json();
+
+                if (data.recordings.length === 0) {
+                    return;
+                }
+
+                const latest = data.recordings[data.recordings.length - 1];
+                const videoPlayer = document.getElementById('videoPlayer');
+                const video = document.getElementById('replayVideo');
+                const videoInfo = document.getElementById('videoInfo');
+
+                video.src = `/api/download/${latest.name}`;
+
+                // Set intelligent default playback speed based on capture FPS
+                // Higher FPS = slower default playback for better slow-motion
+                const fps = latest.metadata?.fps || 30;
+                let defaultSpeed = 1.0;
+
+                if (fps >= 120) {
+                    defaultSpeed = 0.25;  // 4x slow motion for 120fps
+                } else if (fps >= 60) {
+                    defaultSpeed = 0.5;   // 2x slow motion for 60fps
+                } else {
+                    defaultSpeed = 1.0;   // Real-time for 30fps
+                }
+
+                currentPlaybackSpeed = defaultSpeed;
+                video.playbackRate = defaultSpeed;
+
+                // Update button states
+                document.querySelectorAll('.speed-button').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.textContent === `${defaultSpeed}x`) {
+                        btn.classList.add('active');
+                    }
+                });
+
+                const sizeMB = (latest.size / 1024 / 1024).toFixed(2);
+                videoInfo.textContent = `${latest.name} (${sizeMB} MB) - ${fps}fps - ${defaultSpeed}x default`;
+
+                videoPlayer.style.display = 'block';
+
+                video.play().catch(err => {
+                    console.error('Autoplay failed:', err);
+                    showMessage('Click the video to play', 'error');
+                });
+            } catch (error) {
+                console.error('Failed to play latest recording:', error);
+            }
+        }
+
+        function setPlaybackSpeed(speed) {
+            currentPlaybackSpeed = speed;
+            const video = document.getElementById('replayVideo');
+            video.playbackRate = speed;
+
+            document.querySelectorAll('.speed-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        document.getElementById('recordButton').addEventListener('click', startRecording);
+
+        updateStatus();
+        loadRecordings();
+        playLatestRecording();
+
+        statusInterval = setInterval(updateStatus, 1000);
+        setInterval(loadRecordings, 5000);
+    </script>
+</body>
+</html>
+

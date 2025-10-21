@@ -1,0 +1,21 @@
+{
+  "_comments": {
+    "preset": "Slow Motion - 120 FPS",
+    "description": "2x slow motion at 728x544 resolution - tested and working",
+    "usage": "cp config_120fps.json config.json && restart server",
+    "lm_max_recording_duration": "Maximum time to record before timeout when in launch monitor mode (seconds)"
+  },
+  "duration": 2,
+  "format": "h264",
+  "fps": 120,
+  "height": 544,
+  "output_dir": "./recordings",
+  "pre_record_buffer": 2,
+  "quality": "high",
+  "shutter_speed": 1000,
+  "upload_destination": "gdrive://1keSXNvxKf_PeJ_CoUPkTscP-h_4yUOuy",
+  "upload_enabled": true,
+  "width": 728,
+  "auto_exposure": true,
+  "lm_max_recording_duration": 8
+}

@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Golf Swing Camera</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 1.8em;
+        }
+        
+        .back-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .back-button:hover {
+            background: #764ba2;
+        }
+        
+        .settings-grid {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .settings-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .settings-card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-group small {
+            display: block;
+            color: #999;
+            margin-top: 5px;
+            font-size: 0.85em;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+        }
+        
+        .button-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .button-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .button-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .button-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .button-success:hover {
+            background: #059669;
+        }
+        
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .status-badge.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-badge.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-badge.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .file-upload {
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-upload:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .file-upload input[type="file"] {
+            display: none;
+        }
+        
+        .file-upload-label {
+            cursor: pointer;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .setup-steps {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .setup-steps ol {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+        
+        .setup-steps li {
+            margin-bottom: 10px;
+        }
+        
+        .setup-steps a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .setup-steps a:hover {
+            text-decoration: underline;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Mode Card Styles */
+        .mode-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .mode-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .mode-card.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-width: 3px;
+        }
+
+        .mode-card.active::before {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .mode-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+
+        .mode-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 0.95em;
+            margin-bottom: 4px;
+        }
+
+        .mode-specs {
+            color: #666;
+            font-size: 0.75em;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Settings</h1>
+            <a href="/" class="back-button">← Back to Camera</a>
+        </div>
+        
+        <div id="message"></div>
+        
+        <div class="settings-grid">
+            <!-- Camera Mode Selection -->
+            <div class="settings-card">
+                <h2>📹 Camera Mode</h2>
+                <p style="color: #666; margin-bottom: 20px;">Select optimized camera configuration (resolution, FPS, shutter speed)</p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div class="mode-card" data-mode="golf_swing" onclick="selectCameraMode('golf_swing')">
+                        <div class="mode-icon">⛳</div>
+                        <div class="mode-name">Golf Swing</div>
+                        <div class="mode-specs">728x544 @ 120fps</div>
+                        <div class="mode-specs">1/1000s shutter</div>
+                    </div>
+                    <div class="mode-card" data-mode="golf_impact" onclick="selectCameraMode('golf_impact')">
+                        <div class="mode-icon">💥</div>
+                        <div class="mode-name">Impact</div>
+                        <div class="mode-specs">512x384 @ 240fps</div>
+                        <div class="mode-specs">1/2000s shutter</div>
+                    </div>
+                    <div class="mode-card" data-mode="max_detail" onclick="selectCameraMode('max_detail')">
+                        <div class="mode-icon">📸</div>
+                        <div class="mode-name">Max Detail</div>
+                        <div class="mode-specs">1456x1088 @ 60fps</div>
+                        <div class="mode-specs">1/500s shutter</div>
+                    </div>
+                    <div class="mode-card" data-mode="standard" onclick="selectCameraMode('standard')">
+                        <div class="mode-icon">🎥</div>
+                        <div class="mode-name">Standard</div>
+                        <div class="mode-specs">1280x720 @ 90fps</div>
+                        <div class="mode-specs">1/666s shutter</div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="saveCameraModeBtn" class="button button-primary" onclick="saveCameraMode()">💾 Save Camera Mode</button>
+                </div>
+            </div>
+
+            <!-- Recording Settings -->
+            <div class="settings-card">
+                <h2>⏱️ Recording Settings</h2>
+                <p style="color: #666; margin-bottom: 20px;">Configure how recordings are captured and stored</p>
+
+                <form id="recordingSettingsForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="duration">Recording Duration (seconds)</label>
+                            <input type="number" id="duration" name="duration" min="1" max="60">
+                            <small>Min 1s for impacts, 3-5s for swings</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="format">Video Format</label>
+                            <select id="format" name="format">
+                                <option value="h264">H264 (smaller, raw)</option>
+                                <option value="mp4">MP4 (container)</option>
+                            </select>
+                            <small>H264 recommended for best performance</small>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="button button-primary">💾 Save Recording Settings</button>
+                    </div>
+                </form>
+            </div>
+            <!-- Google Drive Setup -->
+            <div class="settings-card">
+                <h2>
+                    ☁️ Google Drive Upload
+                    <span id="gdriveStatus" class="status-badge warning">Not Configured</span>
+                </h2>
+                
+                <div id="gdriveSetupSteps" class="setup-steps">
+                    <p><strong>Setup Google Drive (one-time):</strong></p>
+                    <ol>
+                        <li>Go to <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></li>
+                        <li>Create a project and enable Google Drive API</li>
+                        <li>Create OAuth Desktop credentials</li>
+                        <li>Download the credentials JSON file</li>
+                        <li>Upload it below:</li>
+                    </ol>
+                </div>
+                
+                <div class="form-group">
+                    <div class="file-upload" id="fileUploadArea">
+                        <input type="file" id="credentialsFile" accept=".json">
+                        <label for="credentialsFile" class="file-upload-label">
+                            📁 Click to upload gdrive_credentials.json
+                        </label>
+                        <p style="color: #999; margin-top: 10px; font-size: 0.9em;">
+                            <span id="credentialsStatus">No file uploaded</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="authenticateButton" class="button button-success" disabled>
+                        🔐 Authenticate with Google
+                    </button>
+                    <button id="testUploadButton" class="button button-secondary" disabled>
+                        🧪 Test Connection
+                    </button>
+                </div>
+                
+                <div class="form-group" style="margin-top: 20px;">
+                    <label for="upload_destination">Upload Destination</label>
+                    <input type="text" id="upload_destination" name="upload_destination" placeholder="gdrive://folder_id">
+                    <small>After authentication, folder ID will be auto-filled</small>
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="upload_enabled" name="upload_enabled">
+                        <label for="upload_enabled">Enable automatic upload after recording</label>
+                    </div>
+                </div>
+                
+                <div class="button-group" style="margin-top: 20px;">
+                    <button id="saveUploadSettings" class="button button-primary">💾 Save Upload Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const presets = {
+            golf_swing: {
+                width: 728,
+                height: 544,
+                fps: 120,
+                shutter_speed: 1000,
+                duration: 3,
+                auto_exposure: true
+            },
+            golf_impact: {
+                width: 512,
+                height: 384,
+                fps: 240,
+                shutter_speed: 500,
+                duration: 2,
+                auto_exposure: true
+            },
+            max_detail: {
+                width: 1456,
+                height: 1088,
+                fps: 60,
+                shutter_speed: 2000,
+                duration: 5,
+                auto_exposure: true
+            },
+            standard: {
+                width: 1280,
+                height: 720,
+                fps: 90,
+                shutter_speed: 1500,
+                duration: 3,
+                auto_exposure: true
+            }
+        };
+        
+        let currentConfig = {};
+        let selectedMode = null;
+
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+
+                currentConfig = data.config;
+
+                // Load recording settings
+                document.getElementById('duration').value = data.config.duration;
+                document.getElementById('format').value = data.config.format;
+                document.getElementById('upload_destination').value = data.config.upload_destination || '';
+                document.getElementById('upload_enabled').checked = data.config.upload_enabled;
+
+                // Detect and highlight current camera mode
+                detectCurrentMode(data.config);
+
+                updateGDriveStatus(data.gdrive_configured, data.gdrive_credentials_present);
+            } catch (error) {
+                showMessage('Failed to load configuration: ' + error, 'error');
+            }
+        }
+
+        function detectCurrentMode(config) {
+            // Find matching mode based on resolution and FPS
+            for (const [modeName, modeConfig] of Object.entries(presets)) {
+                if (config.width === modeConfig.width &&
+                    config.height === modeConfig.height &&
+                    config.fps === modeConfig.fps) {
+                    selectCameraMode(modeName);
+                    return;
+                }
+            }
+        }
+
+        function selectCameraMode(modeName) {
+            // Remove active class from all cards
+            document.querySelectorAll('.mode-card').forEach(card => card.classList.remove('active'));
+
+            // Add active class to selected card
+            const selectedCard = document.querySelector(`[data-mode="${modeName}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('active');
+                selectedMode = modeName;
+            }
+        }
+
+        async function saveCameraMode() {
+            if (!selectedMode) {
+                showMessage('Please select a camera mode first', 'error');
+                return;
+            }
+
+            const modeConfig = presets[selectedMode];
+            const newConfig = { ...currentConfig, ...modeConfig };
+
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newConfig)
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showMessage('Camera mode saved successfully! Camera will reconfigure.', 'success');
+                    currentConfig = newConfig;
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showMessage('Failed to save: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error saving camera mode: ' + error, 'error');
+            }
+        }
+        
+        function updateGDriveStatus(authenticated, credentialsPresent) {
+            const statusBadge = document.getElementById('gdriveStatus');
+            const authenticateButton = document.getElementById('authenticateButton');
+            const testUploadButton = document.getElementById('testUploadButton');
+            const credentialsStatus = document.getElementById('credentialsStatus');
+            
+            if (authenticated) {
+                statusBadge.textContent = 'Configured ✓';
+                statusBadge.className = 'status-badge success';
+                authenticateButton.disabled = false;
+                authenticateButton.textContent = '✓ Re-authenticate';
+                testUploadButton.disabled = false;
+                credentialsStatus.textContent = 'Credentials uploaded and authenticated ✓';
+            } else if (credentialsPresent) {
+                statusBadge.textContent = 'Needs Authentication';
+                statusBadge.className = 'status-badge warning';
+                authenticateButton.disabled = false;
+                testUploadButton.disabled = true;
+                credentialsStatus.textContent = 'Credentials uploaded, click Authenticate';
+            } else {
+                statusBadge.textContent = 'Not Configured';
+                statusBadge.className = 'status-badge warning';
+                authenticateButton.disabled = true;
+                testUploadButton.disabled = true;
+                credentialsStatus.textContent = 'No file uploaded';
+            }
+        }
+        
+        function showMessage(text, type = 'success') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            
+            setTimeout(() => {
+                messageDiv.className = '';
+                messageDiv.textContent = '';
+            }, 5000);
+        }
+        
+        // Recording settings form handler (duration, format)
+        document.getElementById('recordingSettingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const config = { ...currentConfig };
+            config.duration = parseInt(document.getElementById('duration').value);
+            config.format = document.getElementById('format').value;
+
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showMessage('Recording settings saved successfully!', 'success');
+                    currentConfig = config;
+                } else {
+                    showMessage('Failed to save settings: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error saving settings: ' + error, 'error');
+            }
+        });
+        
+        document.getElementById('credentialsFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append('credentials_file', file);
+            formData.append('action', 'upload_credentials');
+            
+            try {
+                const response = await fetch('/api/gdrive/setup', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showMessage('Credentials uploaded! Now click "Authenticate with Google"', 'success');
+                    updateGDriveStatus(false, true);
+                } else {
+                    showMessage('Failed to upload credentials: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error uploading credentials: ' + error, 'error');
+            }
+        });
+        
+        document.getElementById('authenticateButton').addEventListener('click', async () => {
+            try {
+                const formData = new FormData();
+                formData.append('action', 'authenticate');
+                
+                const response = await fetch('/api/gdrive/setup', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    window.location.href = data.auth_url;
+                } else {
+                    showMessage('Authentication failed: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error starting authentication: ' + error, 'error');
+            }
+        });
+        
+        document.getElementById('testUploadButton').addEventListener('click', async () => {
+            const destination = document.getElementById('upload_destination').value;
+            
+            if (!destination) {
+                showMessage('Please enter an upload destination first', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/test-upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ destination })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showMessage('✓ ' + data.message, 'success');
+                } else {
+                    showMessage('✗ ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Test failed: ' + error, 'error');
+            }
+        });
+        
+        document.getElementById('saveUploadSettings').addEventListener('click', async () => {
+            const config = { ...currentConfig };
+            config.upload_enabled = document.getElementById('upload_enabled').checked;
+            config.upload_destination = document.getElementById('upload_destination').value;
+            
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showMessage('Upload settings saved successfully!', 'success');
+                    currentConfig = config;
+                } else {
+                    showMessage('Failed to save settings: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Error saving settings: ' + error, 'error');
+            }
+        });
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('gdrive_success') === 'true') {
+            const folderId = urlParams.get('folder_id');
+            showMessage('Google Drive authenticated successfully! Folder created.', 'success');
+            document.getElementById('upload_destination').value = `gdrive://${folderId}`;
+            updateGDriveStatus(true, true);
+            window.history.replaceState({}, document.title, '/settings');
+        } else if (urlParams.has('gdrive_error')) {
+            showMessage('Authentication error: ' + urlParams.get('gdrive_error'), 'error');
+            window.history.replaceState({}, document.title, '/settings');
+        }
+        
+        loadConfig();
+    </script>
+</body>
+</html>
+

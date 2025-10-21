@@ -1,0 +1,18 @@
+[Unit]
+Description=Golf Swing Camera Web Interface
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/swing-cam
+Environment="PATH=/home/pi/swing-cam/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/home/pi/swing-cam/venv/bin/python /home/pi/swing-cam/web_interface.py
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
