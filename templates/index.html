@@ -12,6 +12,14 @@
             justify-content: center;
             align-items: center;
         }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -22,7 +30,8 @@
                 <p class="subtitle">Capture fast motion in high-speed detail</p>
             </div>
             <div class="nav-buttons">
-                <a href="/preview" class="nav-button">👁️ Live Preview</a>
+                <span class="nav-button nav-button-current">🏠 Home</span>
+                <a href="/preview" class="nav-button">👁️ Preview</a>
                 <a href="/settings" class="nav-button">⚙️ Settings</a>
             </div>
         </div>
@@ -56,21 +65,21 @@
             <div class="video-controls">
                 <div class="speed-control">
                     <span class="text-label">Playback Speed:</span>
-                    <button class="speed-button" onclick="setPlaybackSpeed(0.25)">0.25x</button>
-                    <button class="speed-button active" onclick="setPlaybackSpeed(0.5)">0.5x</button>
-                    <button class="speed-button" onclick="setPlaybackSpeed(1.0)">1x</button>
+                    <button class="speed-button" onclick="setPlaybackSpeed(0.25)" aria-label="Play at quarter speed">0.25x</button>
+                    <button class="speed-button active" onclick="setPlaybackSpeed(0.5)" aria-label="Play at half speed">0.5x</button>
+                    <button class="speed-button" onclick="setPlaybackSpeed(1.0)" aria-label="Play at normal speed">1x</button>
                 </div>
                 <div class="text-meta" id="videoInfo">-</div>
             </div>
         </div>
 
-        <button id="recordButton" class="record-button">🎥 Record</button>
+        <button id="recordButton" class="record-button">🎥 Record Swing</button>
         
         <div class="recordings">
             <div class="flex-between-mb">
                 <h2 class="mb-0">Recent Recordings</h2>
                 <button id="deleteAllButton" class="delete-button hidden" onclick="deleteAllRecordings()">
-                    🗑️ Delete All
+                    🗑️ Delete All Recordings
                 </button>
             </div>
             <div id="recordingList" class="recording-list">

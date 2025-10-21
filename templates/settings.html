@@ -33,7 +33,11 @@
     <div class="container">
         <div class="header">
             <h1>⚙️ Settings</h1>
-            <a href="/" class="back-button">← Back to Camera</a>
+            <div class="nav-buttons">
+                <a href="/" class="nav-button">🏠 Home</a>
+                <a href="/preview" class="nav-button">👁️ Preview</a>
+                <span class="nav-button nav-button-current">⚙️ Settings</span>
+            </div>
         </div>
         
         <div id="message"></div>
@@ -72,7 +76,7 @@
                 </div>
 
                 <div class="button-group">
-                    <button id="saveCameraModeBtn" class="button button-primary" onclick="saveCameraMode()">💾 Save Camera Mode</button>
+                    <button id="saveCameraModeBtn" class="button button-primary" onclick="saveCameraMode()">Save Camera Mode</button>
                 </div>
             </div>
 
@@ -100,7 +104,7 @@
                     </div>
 
                     <div class="button-group">
-                        <button type="submit" class="button button-primary">💾 Save Recording Settings</button>
+                        <button type="submit" class="button button-primary">Save Recording Settings</button>
                     </div>
                 </form>
             </div>
@@ -157,7 +161,7 @@
                 </div>
                 
                 <div class="button-group mt-20">
-                    <button id="saveUploadSettings" class="button button-primary">💾 Save Upload Settings</button>
+                    <button id="saveUploadSettings" class="button button-primary">Save Upload Settings</button>
                 </div>
             </div>
         </div>

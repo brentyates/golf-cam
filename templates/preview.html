@@ -10,15 +10,24 @@
         .container {
             max-width: 1200px;
         }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Live Preview</h1>
+            <h1>👁️ Live Preview</h1>
             <div class="nav-buttons">
-                <a href="/" class="nav-button">Home</a>
-                <a href="/settings" class="nav-button">Settings</a>
+                <a href="/" class="nav-button">🏠 Home</a>
+                <span class="nav-button nav-button-current">👁️ Preview</span>
+                <a href="/settings" class="nav-button">⚙️ Settings</a>
             </div>
         </div>
 
@@ -60,7 +69,7 @@
 
                 <div class="mt-30">
                     <button id="test-fps-button" class="test-button">
-                        Test Max FPS
+                        Test Camera Performance
                     </button>
                     <div id="fps-test-result" class="test-result hidden">
                         <strong>Test Results:</strong>
@@ -201,7 +210,7 @@
                 })
                 .finally(() => {
                     testFpsButton.disabled = false;
-                    testFpsButton.textContent = 'Test Max FPS';
+                    testFpsButton.textContent = 'Test Camera Performance';
                     // Restart video stream
                     videoFeed.src = originalSrc;
                 });
