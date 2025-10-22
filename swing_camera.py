@@ -410,6 +410,13 @@ class SwingCamera:
         else:
             self.lm_temp_file = self.output_dir / f"temp_lm_{timestamp}.mp4"
 
+        # Backend will convert h264 to mp4, so update path now
+        # This ensures shot_detected() uses the correct path even if it's called
+        # before the recording thread finishes
+        temp_str = str(self.lm_temp_file)
+        if temp_str.endswith('.h264'):
+            self.lm_temp_file = Path(temp_str[:-5] + '.mp4')
+
         # Start continuous recording in background thread
         self.lm_state = LMState.ARMED
         self.lm_recording_start_time = time.time()
@@ -451,10 +458,9 @@ class SwingCamera:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"swing_{timestamp}"
 
-            if self.config['format'] == 'h264':
-                output_path = self.output_dir / f"{filename}.h264"
-            else:
-                output_path = self.output_dir / f"{filename}.mp4"
+            # Always use MP4 for browser compatibility
+            # (temp file is already MP4 from camera backend)
+            output_path = self.output_dir / f"{filename}.mp4"
 
             # Use FFmpeg to extract last N seconds
             success = self._extract_clip(self.lm_temp_file, output_path, self.config['duration'])
@@ -556,8 +562,8 @@ class SwingCamera:
             self.recording = True
 
             try:
-                # Record to temp file
-                actual_output_path = self.backend.record(self.lm_temp_file, max_duration)
+                # Record to temp file, passing cancel event for early stopping
+                self.backend.record(self.lm_temp_file, max_duration, self.lm_cancel_event)
 
                 # Check if we were cancelled during recording
                 if self.lm_cancel_event.is_set():
@@ -598,15 +604,22 @@ class SwingCamera:
         import subprocess
 
         try:
-            # Use FFmpeg to extract last N seconds
+            # Use FFmpeg to extract last N seconds with frame-accurate seeking
+            # Re-encode to ensure ALL frames are preserved (critical for high-speed analysis)
             # -sseof: seek from end of file (negative value)
-            # -c copy: copy codec (no re-encoding, fast and lossless)
+            # -c:v libx264: re-encode for frame accuracy (preserves every frame)
+            # -preset ultrafast: fast encoding
+            # -crf 18: high quality (visually lossless)
             cmd = [
                 'ffmpeg',
                 '-y',  # Overwrite output file
                 '-sseof', f'-{duration}',  # Seek to N seconds before end
                 '-i', str(input_path),
-                '-c', 'copy',  # Copy codec (no re-encoding)
+                '-c:v', 'libx264',  # Re-encode for frame-accurate extraction
+                '-preset', 'ultrafast',  # Fast encoding
+                '-crf', '18',  # High quality (visually lossless)
+                '-vsync', '0',  # Preserve exact frame timing
+                '-c:a', 'copy',  # Copy audio if present
                 str(output_path)
             ]
 

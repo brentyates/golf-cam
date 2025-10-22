@@ -34,8 +34,14 @@ class CameraBackend(ABC):
         pass
     
     @abstractmethod
-    def record(self, output_path, duration):
-        """Record video to output_path for duration seconds."""
+    def record(self, output_path, duration, cancel_event=None):
+        """Record video to output_path for duration seconds.
+
+        Args:
+            output_path: Path to save the recording
+            duration: Maximum recording duration in seconds
+            cancel_event: Optional threading.Event to allow early cancellation
+        """
         pass
     
     @abstractmethod
@@ -84,10 +90,22 @@ class PiCamera2Backend(CameraBackend):
         width = width + (width % 2)
         height = height + (height % 2)
 
+        # IMX296 sensor full resolution
+        SENSOR_WIDTH = 1456
+        SENSOR_HEIGHT = 1088
+
+        # Calculate centered crop offset
+        crop_x = (SENSOR_WIDTH - width) // 2
+        crop_y = (SENSOR_HEIGHT - height) // 2
+
+        # Ensure offsets are even numbers
+        crop_x = crop_x - (crop_x % 2)
+        crop_y = crop_y - (crop_y % 2)
+
         # Try common media device numbers and I2C addresses
         for media_num in [1, 0, 2]:  # /dev/media1 is most common on Pi 5
             for camera_addr in ['11-001a', '10-001a']:  # Try both I2C addresses
-                crop_cmd = f"'imx296 {camera_addr}':0 [fmt:SBGGR10_1X10/{width}x{height} crop:(0,0)/{width}x{height}]"
+                crop_cmd = f"'imx296 {camera_addr}':0 [fmt:SBGGR10_1X10/{width}x{height} crop:({crop_x},{crop_y})/{width}x{height}]"
 
                 try:
                     result = subprocess.run(
@@ -98,7 +116,7 @@ class PiCamera2Backend(CameraBackend):
                     )
 
                     if result.returncode == 0:
-                        logger.info(f"Sensor crop applied: {width}x{height} (media{media_num}, {camera_addr})")
+                        logger.info(f"Sensor crop applied: {width}x{height} centered at ({crop_x},{crop_y}) (media{media_num}, {camera_addr})")
                         return True
 
                 except (subprocess.TimeoutExpired, FileNotFoundError, subprocess.CalledProcessError):
@@ -187,10 +205,20 @@ class PiCamera2Backend(CameraBackend):
             # Set frame duration as runtime control AFTER starting
             # This is more reliable than setting in configuration
             frame_duration_us = int(1_000_000 / self.config['fps'])
-            self.camera.set_controls({
+            controls_to_set = {
                 "FrameDurationLimits": (frame_duration_us, frame_duration_us)
-            })
+            }
+
+            # Also re-apply exposure time if in manual mode (not auto-exposure)
+            # This ensures the shutter speed actually takes effect
+            if not self.config.get('auto_exposure', False):
+                controls_to_set["ExposureTime"] = self.config['shutter_speed']
+                controls_to_set["AeEnable"] = False
+
+            self.camera.set_controls(controls_to_set)
             logger.info(f"Set FrameDurationLimits: {frame_duration_us}us ({self.config['fps']} FPS)")
+            if not self.config.get('auto_exposure', False):
+                logger.info(f"Set ExposureTime: {self.config['shutter_speed']}us")
 
             time.sleep(0.5)
             logger.info("PiCamera2 started")
@@ -201,19 +229,45 @@ class PiCamera2Backend(CameraBackend):
             self.camera.stop()
             logger.info("PiCamera2 stopped")
     
-    def record(self, output_path, duration):
+    def record(self, output_path, duration, cancel_event=None):
         """Record with Pi camera using hardware encoding."""
         # Convert h264 to mp4 for browser compatibility
         output_str = str(output_path)
         if output_str.endswith('.h264'):
             output_str = output_str[:-5] + '.mp4'
 
+        # Log actual FPS settings before recording
+        target_fps = self.config.get('fps', 120)
+        frame_duration_us = int(1_000_000 / target_fps)
+        logger.info(f"Starting recording at {target_fps} FPS (frame duration: {frame_duration_us}us)")
+        logger.info(f"Resolution: {self.config['width']}x{self.config['height']}, Format: YUV420 (full color)")
+
+        # Re-apply camera controls before recording to ensure they stick
+        # PiCamera2 may reset controls when starting a recording
+        controls_to_set = {
+            "FrameDurationLimits": (frame_duration_us, frame_duration_us)
+        }
+        if not self.config.get('auto_exposure', False):
+            controls_to_set["ExposureTime"] = self.config['shutter_speed']
+            controls_to_set["AeEnable"] = False
+            logger.info(f"Setting recording exposure: {self.config['shutter_speed']}µs (1/{int(1000000/self.config['shutter_speed'])}s)")
+
+        self.camera.set_controls(controls_to_set)
+
         # Always use FfmpegOutput for MP4 container (browser-compatible)
         encoder = self.H264Encoder(bitrate=10000000)
         output = self.FfmpegOutput(output_str)
         self.camera.start_recording(encoder, output)
 
-        time.sleep(duration)
+        # Sleep with cancel event checking
+        start_time = time.time()
+        while (time.time() - start_time) < duration:
+            if cancel_event and cancel_event.is_set():
+                elapsed = time.time() - start_time
+                logger.info(f"Recording cancelled after {elapsed:.1f}s (shot detected)")
+                break
+            time.sleep(0.1)  # Check every 100ms
+
         self.camera.stop_recording()
 
         logger.info(f"Recorded at {self.config.get('fps', 120)}fps - all frames preserved")
@@ -270,7 +324,7 @@ class OpenCVBackend(CameraBackend):
             self.writer = None
         logger.info("OpenCV camera stopped")
     
-    def record(self, output_path, duration):
+    def record(self, output_path, duration, cancel_event=None):
         """Record with OpenCV (software encoding)."""
         # Use H.264 codec for browser compatibility
         # Try different codec options in order of preference
@@ -314,11 +368,17 @@ class OpenCVBackend(CameraBackend):
                 (width, height)
             )
             logger.warning("Using mp4v codec - may not play in all browsers")
-        
+
         start_time = time.time()
         frame_count = 0
 
         while (time.time() - start_time) < duration:
+            # Check for cancellation
+            if cancel_event and cancel_event.is_set():
+                elapsed = time.time() - start_time
+                logger.info(f"Recording cancelled after {elapsed:.1f}s (shot detected)")
+                break
+
             ret, frame = self.camera.read()
             if ret:
                 self.writer.write(frame)
@@ -371,7 +431,7 @@ class DemoBackend(CameraBackend):
         """Simulate camera stop."""
         logger.info("Demo camera stopped (simulated)")
     
-    def record(self, output_path, duration):
+    def record(self, output_path, duration, cancel_event=None):
         """Simulate recording by creating a demo video file."""
         logger.info(f"Demo recording for {duration}s (simulated)")
 

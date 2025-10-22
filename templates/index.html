@@ -65,9 +65,10 @@
             <div class="video-controls">
                 <div class="speed-control">
                     <span class="text-label">Playback Speed:</span>
-                    <button class="speed-button" onclick="setPlaybackSpeed(0.25)" aria-label="Play at quarter speed">0.25x</button>
-                    <button class="speed-button active" onclick="setPlaybackSpeed(0.5)" aria-label="Play at half speed">0.5x</button>
-                    <button class="speed-button" onclick="setPlaybackSpeed(1.0)" aria-label="Play at normal speed">1x</button>
+                    <button class="speed-button active" onclick="setPlaybackSpeed(0.0625, this)" aria-label="Play at 16x slow motion">0.0625x</button>
+                    <button class="speed-button" onclick="setPlaybackSpeed(0.125, this)" aria-label="Play at 8x slow motion">0.125x</button>
+                    <button class="speed-button" onclick="setPlaybackSpeed(0.25, this)" aria-label="Play at 4x slow motion">0.25x</button>
+                    <button class="speed-button" onclick="setPlaybackSpeed(0.5, this)" aria-label="Play at 2x slow motion">0.5x</button>
                 </div>
                 <div class="text-meta" id="videoInfo">-</div>
             </div>
@@ -92,39 +93,45 @@
         let isRecording = false;
         let statusInterval;
         let currentPlaybackSpeed = 0.5;
-        
+        let lastRecordingCount = 0;
+
         async function updateStatus() {
             try {
                 const response = await fetch('/api/status');
                 const data = await response.json();
-                
+
                 document.getElementById('resolution').textContent = data.config.resolution;
                 document.getElementById('fps').textContent = data.config.fps + ' fps';
                 document.getElementById('duration').textContent = data.config.duration + 's';
                 document.getElementById('shutter').textContent = '1/' + Math.round(1000000 / data.config.shutter_speed) + 's';
-                
+
                 isRecording = data.recording;
                 updateRecordButton();
             } catch (error) {
                 console.error('Failed to update status:', error);
             }
         }
-        
+
         async function loadRecordings() {
             try {
                 const response = await fetch('/api/recordings');
                 const data = await response.json();
-                
+
                 const listElement = document.getElementById('recordingList');
-                
+
                 if (data.recordings.length === 0) {
                     listElement.innerHTML = '<div class="empty-state">No recordings yet. Press the button above to capture your first swing!</div>';
                     document.getElementById('deleteAllButton').classList.add('hidden');
+                    lastRecordingCount = 0;
                     return;
                 }
 
                 const deleteAllButton = document.getElementById('deleteAllButton');
                 deleteAllButton.classList.remove('hidden');
+
+                // Check if a new recording was added (e.g., from launch monitor integration)
+                const newRecordingAdded = data.recordings.length > lastRecordingCount;
+                lastRecordingCount = data.recordings.length;
 
                 listElement.innerHTML = data.recordings.reverse().map(rec => {
                     const sizeMB = (rec.size / 1024 / 1024).toFixed(2);
@@ -147,6 +154,11 @@
                         </div>
                     `;
                 }).join('');
+
+                // Auto-play new recordings (from manual or launch monitor integration)
+                if (newRecordingAdded) {
+                    playLatestRecording();
+                }
             } catch (error) {
                 console.error('Failed to load recordings:', error);
             }
@@ -274,12 +286,14 @@
                 video.src = `/api/download/${latest.name}`;
 
                 // Set intelligent default playback speed based on capture FPS
-                // Higher FPS = slower default playback for better slow-motion
+                // Higher FPS = slower default playback for impact analysis
                 const fps = latest.metadata?.fps || 30;
                 let defaultSpeed = 1.0;
 
-                if (fps >= 120) {
-                    defaultSpeed = 0.25;  // 4x slow motion for 120fps
+                if (fps >= 200) {
+                    defaultSpeed = 0.0625;  // 16x slow motion for 240fps (15fps playback)
+                } else if (fps >= 120) {
+                    defaultSpeed = 0.25;  // 4x slow motion for 120fps (30fps playback)
                 } else if (fps >= 60) {
                     defaultSpeed = 0.5;   // 2x slow motion for 60fps
                 } else {
@@ -287,7 +301,6 @@
                 }
 
                 currentPlaybackSpeed = defaultSpeed;
-                video.playbackRate = defaultSpeed;
 
                 // Update button states
                 document.querySelectorAll('.speed-button').forEach(btn => {
@@ -302,6 +315,13 @@
 
                 videoPlayer.style.display = 'block';
 
+                // Set playback rate after video loads to ensure it sticks
+                video.addEventListener('loadedmetadata', function setRate() {
+                    video.playbackRate = defaultSpeed;
+                    console.log(`Set playback rate to ${defaultSpeed}x for ${fps}fps video`);
+                    video.removeEventListener('loadedmetadata', setRate);
+                }, { once: true });
+
                 video.play().catch(err => {
                     console.error('Autoplay failed:', err);
                     showMessage('Click the video to play', 'error');
@@ -311,15 +331,20 @@
             }
         }
 
-        function setPlaybackSpeed(speed) {
+        function setPlaybackSpeed(speed, button) {
+            console.log('setPlaybackSpeed called with speed:', speed, 'button:', button);
             currentPlaybackSpeed = speed;
             const video = document.getElementById('replayVideo');
             video.playbackRate = speed;
+            console.log('Video playback rate set to:', video.playbackRate);
 
             document.querySelectorAll('.speed-button').forEach(btn => {
                 btn.classList.remove('active');
             });
-            event.target.classList.add('active');
+            if (button) {
+                button.classList.add('active');
+                console.log('Button activated:', button.textContent);
+            }
         }
 
         document.getElementById('recordButton').addEventListener('click', startRecording);

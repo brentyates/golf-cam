@@ -208,6 +208,65 @@ class ConfigView(MethodView):
         return jsonify({'status': 'success', 'message': 'Configuration updated'})
 
 
+class ShutterSpeedView(MethodView):
+    """Update shutter speed on-the-fly without restarting camera."""
+
+    def post(self):
+        global camera, config_path
+
+        data = request.get_json()
+        shutter_speed = data.get('shutter_speed')
+
+        if not shutter_speed:
+            return jsonify({'status': 'error', 'message': 'No shutter speed provided'}), 400
+
+        try:
+            shutter_speed = int(shutter_speed)
+        except (ValueError, TypeError):
+            return jsonify({'status': 'error', 'message': 'Invalid shutter speed value'}), 400
+
+        # Calculate maximum shutter speed for current FPS
+        fps = camera.config.get('fps', 30)
+        max_shutter = int(1000000 / fps) - 100  # Leave 100µs margin
+
+        if shutter_speed > max_shutter:
+            return jsonify({
+                'status': 'error',
+                'message': f'Shutter speed {shutter_speed}µs exceeds maximum {max_shutter}µs for {fps} FPS'
+            }), 400
+
+        if shutter_speed < 50:
+            return jsonify({'status': 'error', 'message': 'Shutter speed must be at least 50µs'}), 400
+
+        # Update shutter speed live using PiCamera2 set_controls
+        backend_name = camera.backend.get_name()
+
+        if 'PiCamera2' in backend_name:
+            try:
+                with camera_lock:
+                    # Use PiCamera2's set_controls to update shutter speed on-the-fly
+                    camera.backend.camera.set_controls({"ExposureTime": shutter_speed})
+                    # Update config in memory (don't save to file - preview only)
+                    camera.config['shutter_speed'] = shutter_speed
+
+                app.logger.info(f"Shutter speed updated live to {shutter_speed}µs (1/{int(1000000/shutter_speed)}s)")
+
+                return jsonify({
+                    'status': 'success',
+                    'message': f'Shutter speed updated to {shutter_speed}µs',
+                    'shutter_speed': shutter_speed,
+                    'fraction': f'1/{int(1000000/shutter_speed)}s'
+                })
+            except Exception as e:
+                app.logger.error(f"Failed to update shutter speed: {e}")
+                return jsonify({'status': 'error', 'message': str(e)}), 500
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'Live shutter speed update only supported on PiCamera2 backend'
+            }), 400
+
+
 class PresetView(MethodView):
     """Load recording presets."""
 
@@ -834,6 +893,7 @@ app.add_url_rule('/api/recordings', view_func=DeleteAllRecordingsView.as_view('d
 app.add_url_rule('/api/recordings/<filename>', view_func=DeleteRecordingView.as_view('delete_recording'), methods=['DELETE'])
 app.add_url_rule('/api/download/<filename>', view_func=DownloadView.as_view('download'))
 app.add_url_rule('/api/config', view_func=ConfigView.as_view('config'))
+app.add_url_rule('/api/shutter-speed', view_func=ShutterSpeedView.as_view('shutter_speed'))
 app.add_url_rule('/api/preset', view_func=PresetView.as_view('preset'))
 app.add_url_rule('/api/gdrive/setup', view_func=GDriveSetupView.as_view('gdrive_setup'))
 app.add_url_rule('/api/gdrive/callback', view_func=GDriveCallbackView.as_view('gdrive_callback'))

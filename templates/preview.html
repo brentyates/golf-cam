@@ -18,6 +18,69 @@
             margin-bottom: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
+
+        .shutter-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        #shutter-slider {
+            flex: 1;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(to right, #333 0%, #666 100%);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        #shutter-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        #shutter-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        #shutter-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s;
+        }
+
+        #shutter-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .shutter-display {
+            min-width: 150px;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        #shutter-value {
+            font-size: 1.1em;
+            color: var(--text-color);
+        }
+
+        #shutter-us {
+            display: block;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
     </style>
 </head>
 <body>
@@ -46,25 +109,39 @@
                         <div class="mode-card" data-mode="golf_swing" onclick="selectMode('golf_swing')">
                             <div class="mode-icon">⛳</div>
                             <div class="mode-name">Golf Swing</div>
-                            <div class="mode-specs">728x544 @ 120fps</div>
+                            <div class="mode-specs">728x544 @ 120fps · 1/1000s</div>
                         </div>
                         <div class="mode-card" data-mode="golf_impact" onclick="selectMode('golf_impact')">
                             <div class="mode-icon">💥</div>
                             <div class="mode-name">Impact</div>
-                            <div class="mode-specs">512x384 @ 240fps</div>
+                            <div class="mode-specs">512x384 @ 240fps · 1/333s</div>
                         </div>
                         <div class="mode-card" data-mode="max_detail" onclick="selectMode('max_detail')">
                             <div class="mode-icon">📸</div>
                             <div class="mode-name">Max Detail</div>
-                            <div class="mode-specs">1456x1088 @ 60fps</div>
+                            <div class="mode-specs">1456x1088 @ 60fps · 1/500s</div>
                         </div>
                         <div class="mode-card" data-mode="standard" onclick="selectMode('standard')">
                             <div class="mode-icon">🎥</div>
                             <div class="mode-name">Standard</div>
-                            <div class="mode-specs">1280x720 @ 90fps</div>
+                            <div class="mode-specs">1280x720 @ 90fps · 1/667s</div>
                         </div>
                     </div>
                     <div class="help-text">Click a mode to reconfigure camera</div>
+                </div>
+
+                <div class="control-group mt-30">
+                    <label>Shutter Speed</label>
+                    <div class="shutter-control">
+                        <input type="range" id="shutter-slider" min="50" max="5000" step="50" value="500">
+                        <div class="shutter-display">
+                            <span id="shutter-value">1/2000s</span>
+                            <span class="help-text" id="shutter-us">(500µs)</span>
+                        </div>
+                    </div>
+                    <div class="help-text">
+                        Adjust shutter speed to control motion blur. Faster = less blur, darker image.
+                    </div>
                 </div>
 
                 <div class="mt-30">
@@ -94,10 +171,10 @@
     <script>
         // Mode presets
         const modes = {
-            golf_swing: { width: 728, height: 544, fps: 120, shutter_speed: 1000, duration: 3, auto_exposure: true },
-            golf_impact: { width: 512, height: 384, fps: 240, shutter_speed: 500, duration: 2, auto_exposure: true },
-            max_detail: { width: 1456, height: 1088, fps: 60, shutter_speed: 2000, duration: 5, auto_exposure: true },
-            standard: { width: 1280, height: 720, fps: 90, shutter_speed: 1500, duration: 3, auto_exposure: true }
+            golf_swing: { width: 728, height: 544, fps: 120, shutter_speed: 1000, duration: 3, auto_exposure: false },
+            golf_impact: { width: 512, height: 384, fps: 240, shutter_speed: 3000, duration: 1, auto_exposure: false },
+            max_detail: { width: 1456, height: 1088, fps: 60, shutter_speed: 2000, duration: 5, auto_exposure: false },
+            standard: { width: 1280, height: 720, fps: 90, shutter_speed: 1500, duration: 3, auto_exposure: false }
         };
 
         // Select mode and reconfigure camera
@@ -127,8 +204,15 @@
                 const data = await response.json();
                 if (data.status === 'success') {
                     console.log(`Switched to ${modeName} mode`);
-                    // Reload video stream
-                    location.reload();
+                    // Wait for camera to restart (2 seconds), then reload video stream
+                    const videoFeed = document.getElementById('video-feed');
+                    videoFeed.src = '';  // Clear old stream
+                    setTimeout(() => {
+                        videoFeed.src = '/video_feed?t=' + Date.now();  // Reload with cache-busting
+                        // Update shutter speed slider to mode's default
+                        shutterSlider.value = mode.shutter_speed;
+                        updateShutterDisplay(mode.shutter_speed);
+                    }, 2000);
                 } else {
                     alert(`Failed to switch mode: ${data.message}`);
                 }
@@ -157,6 +241,56 @@
         }
 
         detectCurrentMode();
+
+        // Shutter speed slider
+        const shutterSlider = document.getElementById('shutter-slider');
+        const shutterValue = document.getElementById('shutter-value');
+        const shutterUs = document.getElementById('shutter-us');
+
+        function updateShutterDisplay(microseconds) {
+            const fractionValue = Math.round(1000000 / microseconds);
+            shutterValue.textContent = `1/${fractionValue}s`;
+            shutterUs.textContent = `(${microseconds}µs)`;
+        }
+
+        // Load current shutter speed
+        fetch('/api/config')
+            .then(resp => resp.json())
+            .then(data => {
+                const currentShutter = data.config.shutter_speed || 500;
+                shutterSlider.value = currentShutter;
+                updateShutterDisplay(currentShutter);
+            });
+
+        // Update shutter speed on slider change
+        let shutterUpdateTimeout;
+        shutterSlider.addEventListener('input', function() {
+            const microseconds = parseInt(this.value);
+            updateShutterDisplay(microseconds);
+
+            // Debounce the API call - wait 300ms after user stops dragging
+            clearTimeout(shutterUpdateTimeout);
+            shutterUpdateTimeout = setTimeout(async () => {
+                try {
+                    // Use new shutter-speed endpoint for live updates (no camera restart!)
+                    const response = await fetch('/api/shutter-speed', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ shutter_speed: microseconds })
+                    });
+
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        console.log(`Shutter speed updated live to ${microseconds}µs (${data.fraction})`);
+                    } else {
+                        console.error('Failed to update shutter speed:', data.message);
+                        alert(`Shutter speed error: ${data.message}`);
+                    }
+                } catch (error) {
+                    console.error('Shutter speed update failed:', error);
+                }
+            }, 300);
+        });
 
         // Test Max FPS button
         const testFpsButton = document.getElementById('test-fps-button');
