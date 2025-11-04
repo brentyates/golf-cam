@@ -131,13 +131,9 @@
 
                 const data = await response.json();
                 if (data.status === 'success') {
-                    console.log(`Switched to ${presetName} preset`);
-                    // Wait for camera to restart (2 seconds), then reload video stream
-                    const videoFeed = document.getElementById('video-feed');
-                    videoFeed.src = '';  // Clear old stream
-                    setTimeout(() => {
-                        videoFeed.src = '/video_feed?t=' + Date.now();  // Reload with cache-busting
-                    }, 2000);
+                    console.log(`Switched to ${presetName} preset - camera reconfigured`);
+                    // Camera is already reconfigured by the time we get here (synchronous backend)
+                    // Video stream will automatically show new resolution - no reload needed!
                 } else {
                     alert(`Failed to switch mode: ${data.message}`);
                 }
