@@ -90,8 +90,10 @@ class PiCamera2Backend(CameraBackend):
         width = width + (width % 2)
         height = height + (height % 2)
 
-        # IMX296 sensor full resolution
-        SENSOR_WIDTH = 1456
+        # IMX296 sensor recommended recording area (not full 1456x1088)
+        # Sony specs: 1440x1088 is recommended recording pixels
+        # This matches GScrop implementation for proven 500+ FPS performance
+        SENSOR_WIDTH = 1440
         SENSOR_HEIGHT = 1088
 
         # Calculate centered crop offset
@@ -102,14 +104,15 @@ class PiCamera2Backend(CameraBackend):
         crop_x = crop_x - (crop_x % 2)
         crop_y = crop_y - (crop_y % 2)
 
-        # Try common media device numbers and I2C addresses
-        for media_num in [1, 0, 2]:  # /dev/media1 is most common on Pi 5
+        # Try all media device numbers (0-5) and I2C addresses
+        # Scan order matches GScrop: 0->1->2->3->4->5
+        for media_num in range(6):  # /dev/media0 through /dev/media5
             for camera_addr in ['11-001a', '10-001a']:  # Try both I2C addresses
                 crop_cmd = f"'imx296 {camera_addr}':0 [fmt:SBGGR10_1X10/{width}x{height} crop:({crop_x},{crop_y})/{width}x{height}]"
 
                 try:
                     result = subprocess.run(
-                        ['media-ctl', '-d', f'/dev/media{media_num}', '--set-v4l2', crop_cmd],
+                        ['media-ctl', '-d', f'/dev/media{media_num}', '--set-v4l2', crop_cmd, '-v'],
                         capture_output=True,
                         text=True,
                         timeout=3

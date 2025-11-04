@@ -1,0 +1,22 @@
+{
+  "_comments": {
+    "preset": "Ultra High Speed - 536 FPS",
+    "description": "17.8x slow motion at 320x96 resolution - proven frameskip-free on Pi5",
+    "usage": "cp config_536fps_320x96.json config.json && restart server",
+    "notes": "Based on GScrop proven results. Close to 240p height. Requires excellent lighting.",
+    "reference": "GScrop: 320x96@536fps confirmed working"
+  },
+  "duration": 1,
+  "format": "h264",
+  "fps": 536,
+  "height": 96,
+  "output_dir": "./recordings",
+  "pre_record_buffer": 2,
+  "quality": "high",
+  "shutter_speed": 5000,
+  "upload_destination": "gdrive://1keSXNvxKf_PeJ_CoUPkTscP-h_4yUOuy",
+  "upload_enabled": true,
+  "width": 320,
+  "auto_exposure": false,
+  "lm_max_recording_duration": 30
+}

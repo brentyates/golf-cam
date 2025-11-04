@@ -1,0 +1,22 @@
+{
+  "_comments": {
+    "preset": "Maximum Speed - 536 FPS",
+    "description": "17.8x slow motion at 128x96 resolution - proven frameskip-free on Pi4B",
+    "usage": "cp config_536fps_128x96.json config.json && restart server",
+    "notes": "Based on GScrop proven results. Smallest usable resolution. Rock-solid framerate.",
+    "reference": "GScrop: 128x96@536fps confirmed frameskip-free on Pi4B"
+  },
+  "duration": 1,
+  "format": "h264",
+  "fps": 536,
+  "height": 96,
+  "output_dir": "./recordings",
+  "pre_record_buffer": 2,
+  "quality": "high",
+  "shutter_speed": 5000,
+  "upload_destination": "gdrive://1keSXNvxKf_PeJ_CoUPkTscP-h_4yUOuy",
+  "upload_enabled": true,
+  "width": 128,
+  "auto_exposure": false,
+  "lm_max_recording_duration": 30
+}
