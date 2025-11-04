@@ -18,69 +18,6 @@
             margin-bottom: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
-
-        .shutter-control {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-top: 10px;
-        }
-
-        #shutter-slider {
-            flex: 1;
-            height: 6px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: linear-gradient(to right, #333 0%, #666 100%);
-            border-radius: 3px;
-            outline: none;
-        }
-
-        #shutter-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            background: var(--primary-color);
-            border-radius: 50%;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        #shutter-slider::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-
-        #shutter-slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: var(--primary-color);
-            border-radius: 50%;
-            cursor: pointer;
-            border: none;
-            transition: transform 0.2s;
-        }
-
-        #shutter-slider::-moz-range-thumb:hover {
-            transform: scale(1.2);
-        }
-
-        .shutter-display {
-            min-width: 150px;
-            text-align: right;
-            font-weight: bold;
-        }
-
-        #shutter-value {
-            font-size: 1.1em;
-            color: var(--text-color);
-        }
-
-        #shutter-us {
-            display: block;
-            font-size: 0.9em;
-            color: var(--text-muted);
-        }
     </style>
 </head>
 <body>
@@ -105,57 +42,13 @@
 
                 <div class="control-group">
                     <label>Recording Mode</label>
-                    <div class="grid-2col mt-10">
-                        <div class="mode-card" data-mode="golf_swing" onclick="selectMode('golf_swing')">
-                            <div class="mode-icon">⛳</div>
-                            <div class="mode-name">Golf Swing</div>
-                            <div class="mode-specs">728x544 @ 120fps · 1/1000s</div>
-                        </div>
-                        <div class="mode-card" data-mode="golf_impact" onclick="selectMode('golf_impact')">
-                            <div class="mode-icon">💥</div>
-                            <div class="mode-name">Impact</div>
-                            <div class="mode-specs">512x384 @ 240fps · 1/333s</div>
-                        </div>
-                        <div class="mode-card" data-mode="max_detail" onclick="selectMode('max_detail')">
-                            <div class="mode-icon">📸</div>
-                            <div class="mode-name">Max Detail</div>
-                            <div class="mode-specs">1456x1088 @ 60fps · 1/500s</div>
-                        </div>
-                        <div class="mode-card" data-mode="standard" onclick="selectMode('standard')">
-                            <div class="mode-icon">🎥</div>
-                            <div class="mode-name">Standard</div>
-                            <div class="mode-specs">1280x720 @ 90fps · 1/667s</div>
+                    <div id="presetContainer" class="grid-2col mt-10">
+                        <!-- Presets loaded dynamically from API -->
+                        <div style="text-align: center; padding: 20px; color: #666; grid-column: 1 / -1;">
+                            Loading camera modes...
                         </div>
                     </div>
                     <div class="help-text">Click a mode to reconfigure camera</div>
-                </div>
-
-                <div class="control-group mt-30">
-                    <label>Shutter Speed</label>
-                    <div class="shutter-control">
-                        <input type="range" id="shutter-slider" min="50" max="5000" step="50" value="500">
-                        <div class="shutter-display">
-                            <span id="shutter-value">1/2000s</span>
-                            <span class="help-text" id="shutter-us">(500µs)</span>
-                        </div>
-                    </div>
-                    <div class="help-text">
-                        Adjust shutter speed to control motion blur. Faster = less blur, darker image.
-                    </div>
-                </div>
-
-                <div class="mt-30">
-                    <button id="test-fps-button" class="test-button">
-                        Test Camera Performance
-                    </button>
-                    <div id="fps-test-result" class="test-result hidden">
-                        <strong>Test Results:</strong>
-                        <div id="fps-result-content"></div>
-                    </div>
-                    <div class="help-text mt-10">
-                        Tests actual FPS without streaming overhead (captures for 3 seconds)<br>
-                        Video will pause automatically during test and restart after
-                    </div>
                 </div>
 
                 <div class="info-box warning">
@@ -169,49 +62,81 @@
     </div>
 
     <script>
-        // Mode presets
-        const modes = {
-            golf_swing: { width: 728, height: 544, fps: 120, shutter_speed: 1000, duration: 3, auto_exposure: false },
-            golf_impact: { width: 512, height: 384, fps: 240, shutter_speed: 3000, duration: 1, auto_exposure: false },
-            max_detail: { width: 1456, height: 1088, fps: 60, shutter_speed: 2000, duration: 5, auto_exposure: false },
-            standard: { width: 1280, height: 720, fps: 90, shutter_speed: 1500, duration: 3, auto_exposure: false }
+        // SINGLE SOURCE OF TRUTH: Presets loaded from recording_presets.json via API
+        let presets = {};
+
+        // Icon mapping for categories
+        const categoryIcons = {
+            'Standard': '🎥',
+            'Slow Motion': '🎬',
+            'High Speed': '⚡'
         };
 
+        async function loadPresets() {
+            try {
+                const response = await fetch('/api/preset');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    presets = data.presets;
+                    renderPresets();
+                } else {
+                    console.error('Failed to load presets:', data.message);
+                }
+            } catch (error) {
+                console.error('Failed to load presets:', error);
+                document.getElementById('presetContainer').innerHTML =
+                    '<div style="text-align: center; padding: 20px; color: #d32f2f; grid-column: 1 / -1;">Failed to load camera modes</div>';
+            }
+        }
+
+        function renderPresets() {
+            const container = document.getElementById('presetContainer');
+
+            // Build HTML for all presets
+            let html = '';
+            for (const [presetId, preset] of Object.entries(presets)) {
+                const icon = categoryIcons[preset.category] || '📹';
+                const shutterDisplay = preset.shutter_speed ?
+                    `1/${Math.round(1000000 / preset.shutter_speed)}s` : 'Auto';
+
+                html += `
+                    <div class="mode-card" data-mode="${presetId}" onclick="selectMode('${presetId}')">
+                        <div class="mode-icon">${icon}</div>
+                        <div class="mode-name">${preset.name}</div>
+                        <div class="mode-specs">${preset.width}x${preset.height} @ ${preset.fps}fps · ${shutterDisplay}</div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
         // Select mode and reconfigure camera
-        async function selectMode(modeName) {
-            const mode = modes[modeName];
-            if (!mode) return;
+        async function selectMode(presetName) {
+            const preset = presets[presetName];
+            if (!preset) return;
 
             // Mark as active
             document.querySelectorAll('.mode-card').forEach(card => card.classList.remove('active'));
-            document.querySelector(`[data-mode="${modeName}"]`).classList.add('active');
+            document.querySelector(`[data-mode="${presetName}"]`).classList.add('active');
 
             try {
-                // Get current config first
-                const configResp = await fetch('/api/config');
-                const configData = await configResp.json();
-
-                // Merge with mode settings
-                const newConfig = { ...configData.config, ...mode };
-
-                // Apply new config
-                const response = await fetch('/api/config', {
+                // Apply preset via proper endpoint
+                const response = await fetch('/api/preset', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newConfig)
+                    body: JSON.stringify({ preset: presetName })
                 });
 
                 const data = await response.json();
                 if (data.status === 'success') {
-                    console.log(`Switched to ${modeName} mode`);
+                    console.log(`Switched to ${presetName} preset`);
                     // Wait for camera to restart (2 seconds), then reload video stream
                     const videoFeed = document.getElementById('video-feed');
                     videoFeed.src = '';  // Clear old stream
                     setTimeout(() => {
                         videoFeed.src = '/video_feed?t=' + Date.now();  // Reload with cache-busting
-                        // Update shutter speed slider to mode's default
-                        shutterSlider.value = mode.shutter_speed;
-                        updateShutterDisplay(mode.shutter_speed);
                     }, 2000);
                 } else {
                     alert(`Failed to switch mode: ${data.message}`);
@@ -223,133 +148,33 @@
         }
 
         // Detect current mode on load
-        function detectCurrentMode() {
-            fetch('/api/config')
-                .then(resp => resp.json())
-                .then(data => {
-                    const config = data.config;
-                    // Find matching mode
-                    for (const [modeName, modeConfig] of Object.entries(modes)) {
-                        if (config.width === modeConfig.width &&
-                            config.height === modeConfig.height &&
-                            config.fps === modeConfig.fps) {
-                            document.querySelector(`[data-mode="${modeName}"]`)?.classList.add('active');
-                            break;
-                        }
+        async function detectCurrentMode() {
+            try {
+                const resp = await fetch('/api/config');
+                const data = await resp.json();
+                const config = data.config;
+
+                // Find matching preset
+                for (const [presetId, presetConfig] of Object.entries(presets)) {
+                    if (config.width === presetConfig.width &&
+                        config.height === presetConfig.height &&
+                        config.fps === presetConfig.fps) {
+                        document.querySelector(`[data-mode="${presetId}"]`)?.classList.add('active');
+                        break;
                     }
-                });
-        }
-
-        detectCurrentMode();
-
-        // Shutter speed slider
-        const shutterSlider = document.getElementById('shutter-slider');
-        const shutterValue = document.getElementById('shutter-value');
-        const shutterUs = document.getElementById('shutter-us');
-
-        function updateShutterDisplay(microseconds) {
-            const fractionValue = Math.round(1000000 / microseconds);
-            shutterValue.textContent = `1/${fractionValue}s`;
-            shutterUs.textContent = `(${microseconds}µs)`;
-        }
-
-        // Load current shutter speed
-        fetch('/api/config')
-            .then(resp => resp.json())
-            .then(data => {
-                const currentShutter = data.config.shutter_speed || 500;
-                shutterSlider.value = currentShutter;
-                updateShutterDisplay(currentShutter);
-            });
-
-        // Update shutter speed on slider change
-        let shutterUpdateTimeout;
-        shutterSlider.addEventListener('input', function() {
-            const microseconds = parseInt(this.value);
-            updateShutterDisplay(microseconds);
-
-            // Debounce the API call - wait 300ms after user stops dragging
-            clearTimeout(shutterUpdateTimeout);
-            shutterUpdateTimeout = setTimeout(async () => {
-                try {
-                    // Use new shutter-speed endpoint for live updates (no camera restart!)
-                    const response = await fetch('/api/shutter-speed', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ shutter_speed: microseconds })
-                    });
-
-                    const data = await response.json();
-                    if (data.status === 'success') {
-                        console.log(`Shutter speed updated live to ${microseconds}µs (${data.fraction})`);
-                    } else {
-                        console.error('Failed to update shutter speed:', data.message);
-                        alert(`Shutter speed error: ${data.message}`);
-                    }
-                } catch (error) {
-                    console.error('Shutter speed update failed:', error);
                 }
-            }, 300);
-        });
+            } catch (error) {
+                console.error('Failed to detect current mode:', error);
+            }
+        }
 
-        // Test Max FPS button
-        const testFpsButton = document.getElementById('test-fps-button');
-        const fpsTestResult = document.getElementById('fps-test-result');
-        const fpsResultContent = document.getElementById('fps-result-content');
+        // Initialize page
+        async function initializePage() {
+            await loadPresets();
+            await detectCurrentMode();
+        }
 
-        testFpsButton.addEventListener('click', function() {
-            // Disable button and show loading state
-            testFpsButton.disabled = true;
-            testFpsButton.textContent = 'Pausing video...';
-            fpsTestResult.classList.add('hidden');
-
-            // Stop the video stream by setting the src to empty
-            const videoFeed = document.getElementById('video-feed');
-            const originalSrc = videoFeed.src;
-            videoFeed.src = '';
-
-            // Wait a moment for the stream to stop, then run the test
-            setTimeout(() => {
-                testFpsButton.textContent = 'Testing... (3 seconds)';
-
-                fetch('/api/test-max-fps', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        fpsResultContent.innerHTML = `
-                            <strong>Achieved FPS: ${data.actual_fps.toFixed(1)}</strong><br>
-                            <div>
-                                Target: ${data.target_fps} FPS<br>
-                                Frames captured: ${data.frames_captured}<br>
-                                Test duration: ${data.duration.toFixed(2)}s<br>
-                                Resolution: ${data.resolution}
-                            </div>
-                        `;
-                        fpsTestResult.classList.remove('hidden', 'error');
-                    } else {
-                        fpsResultContent.innerHTML = `<strong>Error:</strong> ${data.message}`;
-                        fpsTestResult.classList.remove('hidden');
-                        fpsTestResult.classList.add('error');
-                    }
-                })
-                .catch(error => {
-                    fpsResultContent.innerHTML = `<strong>Error:</strong> ${error.message}`;
-                    fpsTestResult.classList.remove('hidden');
-                    fpsTestResult.classList.add('error');
-                })
-                .finally(() => {
-                    testFpsButton.disabled = false;
-                    testFpsButton.textContent = 'Test Camera Performance';
-                    // Restart video stream
-                    videoFeed.src = originalSrc;
-                });
-            }, 500); // Wait 500ms for video stream to fully stop
-        });
+        initializePage();
     </script>
 </body>
 </html>

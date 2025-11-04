@@ -281,9 +281,15 @@ class PresetView(MethodView):
             }), 404
 
         with open(preset_file, 'r') as f:
-            presets = json.load(f)
+            presets_data = json.load(f)
 
-        return jsonify(presets)
+        return jsonify({
+            'status': 'success',
+            'presets': presets_data.get('presets', {}),
+            'categories': presets_data.get('categories', {}),
+            'recommended': presets_data.get('recommended_use_cases', {}),
+            'hardware_notes': presets_data.get('hardware_notes', {})
+        })
 
     def post(self):
         """Apply a preset."""

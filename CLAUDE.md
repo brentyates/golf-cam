@@ -184,14 +184,89 @@ The main code never knows which backend is in use - all backends implement the s
 
 ### Configuration System
 
-- **config.json** - All camera and recording settings
-  - Resolution, FPS, duration, shutter speed
-  - Upload settings (Google Drive folder ID)
-  - Quality presets
-  - Comments stored in `_comments` field (preserved during updates)
+#### Configuration Files
 
-- **gdrive_credentials.json** - Google OAuth2 credentials (not in git)
-- **gdrive_token.pickle** - Google auth token (not in git)
+1. **recording_presets.json** - SINGLE SOURCE OF TRUTH for all camera presets
+   - Contains all 7 camera modes (60fps → 536fps)
+   - Organized by category: Standard, Slow Motion, High Speed
+   - Includes metadata: resolution, FPS, shutter speed, duration, use cases, lighting requirements
+   - UI dynamically loads presets from this file via `/api/preset`
+   - **To add new presets:** Edit this file only, NO code changes required
+
+2. **config.json** - Active runtime configuration (auto-managed)
+   - Current camera settings applied to the system
+   - Updated automatically when user selects preset via UI
+   - Comments stored in `_comments` field (preserved during updates)
+   - Upload settings (Google Drive folder ID)
+   - **DO NOT manually edit** - use Settings UI or `/api/preset` endpoint
+
+3. **gdrive_credentials.json** - Google OAuth2 credentials (not in git)
+4. **gdrive_token.pickle** - Google auth token (not in git)
+
+#### How Configuration Works
+
+**User Workflow (Recommended):**
+```
+1. Open Settings page
+2. Select camera mode card
+3. Click "Save Camera Mode"
+4. Camera automatically reconfigures
+```
+
+**API Workflow (Programmatic):**
+```bash
+# Get available presets
+curl http://localhost:5000/api/preset
+
+# Apply a preset
+curl -X POST http://localhost:5000/api/preset \
+  -H "Content-Type: application/json" \
+  -d '{"preset": "high_speed_400fps"}'
+```
+
+**Backend Flow:**
+```
+recording_presets.json (source of truth)
+    ↓
+/api/preset GET → UI dynamically renders preset cards
+    ↓
+User selects preset → /api/preset POST
+    ↓
+PresetView.post() applies settings to config.json
+    ↓
+Camera backend cleanup → reconfigure → restart
+    ↓
+New settings active immediately (no app restart needed)
+```
+
+#### Adding New Presets
+
+**Steps:**
+1. Edit `recording_presets.json`
+2. Add new preset under `presets` section
+3. Include: name, description, category, width, height, fps, shutter_speed, duration
+4. Optional: use_cases, lighting_requirement, tested, reference, hardware_requirement
+5. Save file
+6. Refresh Settings page - new preset appears automatically
+
+**Example:**
+```json
+"custom_preset": {
+  "name": "Custom Mode - 180 FPS",
+  "description": "Custom resolution for specific use case",
+  "category": "Slow Motion",
+  "width": 600,
+  "height": 400,
+  "fps": 180,
+  "shutter_speed": 2000,
+  "duration": 2,
+  "format": "h264",
+  "quality": "high",
+  "auto_exposure": false,
+  "use_cases": ["Custom application"],
+  "tested": false
+}
+```
 
 ### Web Interface Structure
 
@@ -203,7 +278,8 @@ The main code never knows which backend is in use - all backends implement the s
 - `/api/recordings` - GET list, DELETE all
 - `/api/recordings/<filename>` - DELETE single recording
 - `/api/download/<filename>` - Download recording
-- `/api/config` - GET/POST configuration
+- `/api/config` - GET current config, POST to update (use for duration/format only)
+- `/api/preset` - **GET available presets, POST to apply preset (RECOMMENDED for mode changes)**
 - `/api/gdrive/setup` - Google Drive OAuth setup
 - `/api/gdrive/callback` - OAuth callback
 - `/api/test-upload` - Test upload configuration
@@ -276,12 +352,29 @@ When modifying camera backends:
 
 ### Modifying Recording Settings
 
-Settings are in `config.json` with inline comments in `_comments` field:
-- `width`/`height` - Resolution (must match camera capabilities)
-- `fps` - Frame rate (PiCamera2: up to 200fps, OpenCV: camera-dependent)
-- `shutter_speed` - In microseconds (PiCamera2 only, 2000 = 1/500s)
-- `duration` - Recording length in seconds
-- `format` - "h264" (raw) or "mp4" (container)
+**Use the Settings UI (Recommended):**
+1. Open `/settings` page
+2. Select camera mode from preset cards
+3. Adjust duration/format if needed
+4. Click "Save Camera Mode"
+
+**Via API:**
+```bash
+# Change camera mode (resolution, FPS, shutter)
+curl -X POST http://localhost:5000/api/preset \
+  -H "Content-Type: application/json" \
+  -d '{"preset": "high_speed_400fps"}'
+
+# Change duration/format only
+curl -X POST http://localhost:5000/api/config \
+  -H "Content-Type: application/json" \
+  -d '{"duration": 5, "format": "h264"}'
+```
+
+**Adding New Presets:**
+Edit `recording_presets.json` (see Configuration System section above for examples)
+
+**DO NOT directly edit `config.json`** - it's auto-managed. Use Settings UI or `/api/preset` endpoint.
 
 ### Google Drive Setup
 

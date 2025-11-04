@@ -48,30 +48,10 @@
                 <h2>📹 Camera Mode</h2>
                 <p class="section-description">Select optimized camera configuration (resolution, FPS, shutter speed)</p>
 
-                <div class="grid-2col-mb">
-                    <div class="mode-card" data-mode="golf_swing" onclick="selectCameraMode('golf_swing')">
-                        <div class="mode-icon">⛳</div>
-                        <div class="mode-name">Golf Swing</div>
-                        <div class="mode-specs">728x544 @ 120fps</div>
-                        <div class="mode-specs">1/1000s shutter</div>
-                    </div>
-                    <div class="mode-card" data-mode="golf_impact" onclick="selectCameraMode('golf_impact')">
-                        <div class="mode-icon">💥</div>
-                        <div class="mode-name">Impact</div>
-                        <div class="mode-specs">512x384 @ 240fps</div>
-                        <div class="mode-specs">1/333s shutter</div>
-                    </div>
-                    <div class="mode-card" data-mode="max_detail" onclick="selectCameraMode('max_detail')">
-                        <div class="mode-icon">📸</div>
-                        <div class="mode-name">Max Detail</div>
-                        <div class="mode-specs">1456x1088 @ 60fps</div>
-                        <div class="mode-specs">1/500s shutter</div>
-                    </div>
-                    <div class="mode-card" data-mode="standard" onclick="selectCameraMode('standard')">
-                        <div class="mode-icon">🎥</div>
-                        <div class="mode-name">Standard</div>
-                        <div class="mode-specs">1280x720 @ 90fps</div>
-                        <div class="mode-specs">1/666s shutter</div>
+                <div id="presetContainer">
+                    <!-- Presets will be loaded dynamically from API -->
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        Loading camera modes...
                     </div>
                 </div>
 
@@ -168,43 +148,85 @@
     </div>
     
     <script>
-        const presets = {
-            golf_swing: {
-                width: 728,
-                height: 544,
-                fps: 120,
-                shutter_speed: 1000,
-                duration: 3,
-                auto_exposure: true
-            },
-            golf_impact: {
-                width: 512,
-                height: 384,
-                fps: 240,
-                shutter_speed: 3000,
-                duration: 2,
-                auto_exposure: false
-            },
-            max_detail: {
-                width: 1456,
-                height: 1088,
-                fps: 60,
-                shutter_speed: 2000,
-                duration: 5,
-                auto_exposure: true
-            },
-            standard: {
-                width: 1280,
-                height: 720,
-                fps: 90,
-                shutter_speed: 1500,
-                duration: 3,
-                auto_exposure: true
-            }
-        };
-        
+        // SINGLE SOURCE OF TRUTH: Presets loaded from recording_presets.json via API
+        let presets = {};
+        let categories = {};
         let currentConfig = {};
         let selectedMode = null;
+
+        // Icon mapping for categories
+        const categoryIcons = {
+            'Standard': '🎥',
+            'Slow Motion': '🎬',
+            'High Speed': '⚡'
+        };
+
+        async function loadPresets() {
+            try {
+                const response = await fetch('/api/preset');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    presets = data.presets;
+                    categories = data.categories || {};
+                    renderPresets();
+                } else {
+                    showMessage('Failed to load presets: ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('Failed to load presets: ' + error, 'error');
+                document.getElementById('presetContainer').innerHTML =
+                    '<div style="text-align: center; padding: 20px; color: #d32f2f;">Failed to load camera modes</div>';
+            }
+        }
+
+        function renderPresets() {
+            const container = document.getElementById('presetContainer');
+
+            // Group presets by category
+            const grouped = {};
+            for (const [presetId, preset] of Object.entries(presets)) {
+                const category = preset.category || 'Other';
+                if (!grouped[category]) grouped[category] = [];
+                grouped[category].push({ id: presetId, ...preset });
+            }
+
+            // Build HTML for each category
+            let html = '';
+            for (const [categoryName, categoryPresets] of Object.entries(grouped)) {
+                const icon = categoryIcons[categoryName] || '📹';
+
+                html += `
+                    <div class="preset-category">
+                        <h3 style="margin: 20px 0 10px 0; color: #333; font-size: 1.1em;">
+                            ${icon} ${categoryName}
+                        </h3>
+                        <div class="grid-2col-mb">
+                `;
+
+                for (const preset of categoryPresets) {
+                    const shutterDisplay = preset.shutter_speed ?
+                        `1/${Math.round(1000000 / preset.shutter_speed)}s` : 'Auto';
+
+                    html += `
+                        <div class="mode-card" data-mode="${preset.id}" onclick="selectCameraMode('${preset.id}')">
+                            <div class="mode-icon">${icon}</div>
+                            <div class="mode-name">${preset.name}</div>
+                            <div class="mode-specs">${preset.width}x${preset.height} @ ${preset.fps}fps</div>
+                            <div class="mode-specs">${shutterDisplay} shutter</div>
+                            ${preset.lighting_requirement ? `<div class="mode-specs" style="font-size: 0.65em; color: #ff9800;">⚠️ ${preset.lighting_requirement}</div>` : ''}
+                        </div>
+                    `;
+                }
+
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
 
         async function loadConfig() {
             try {
@@ -258,20 +280,17 @@
                 return;
             }
 
-            const modeConfig = presets[selectedMode];
-            const newConfig = { ...currentConfig, ...modeConfig };
-
             try {
-                const response = await fetch('/api/config', {
+                // Use the proper /api/preset endpoint (single source of truth)
+                const response = await fetch('/api/preset', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newConfig)
+                    body: JSON.stringify({ preset: selectedMode })
                 });
 
                 const data = await response.json();
                 if (data.status === 'success') {
-                    showMessage('Camera mode saved successfully! Camera will reconfigure.', 'success');
-                    currentConfig = newConfig;
+                    showMessage('✓ Camera mode saved! Camera reconfigured successfully.', 'success');
                     setTimeout(() => location.reload(), 1500);
                 } else {
                     showMessage('Failed to save: ' + data.message, 'error');
@@ -464,8 +483,14 @@
             showMessage('Authentication error: ' + urlParams.get('gdrive_error'), 'error');
             window.history.replaceState({}, document.title, '/settings');
         }
-        
-        loadConfig();
+
+        // Load presets first, then config
+        async function initializePage() {
+            await loadPresets();
+            await loadConfig();
+        }
+
+        initializePage();
     </script>
 </body>
 </html>

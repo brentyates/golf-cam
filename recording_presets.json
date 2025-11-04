@@ -1,49 +1,148 @@
 {
   "_comments": {
-    "description": "Recording presets for different use cases",
-    "usage": "Load these via the settings page or copy to config.json"
+    "description": "SINGLE SOURCE OF TRUTH for all camera recording presets",
+    "usage": "UI dynamically loads these presets. Add new presets here only.",
+    "tested_hardware": "Raspberry Pi 5 with IMX296 Global Shutter Camera",
+    "display_order": "Presets displayed in UI in the order listed here"
   },
   "presets": {
-    "standard": {
-      "name": "Standard (60 FPS)",
-      "description": "Full resolution, standard frame rate - best quality",
+    "standard_60fps": {
+      "name": "Standard - 60 FPS",
+      "description": "Full resolution (1456x1088) - best quality, smooth motion",
+      "category": "Standard",
       "width": 1456,
       "height": 1088,
       "fps": 60,
       "shutter_speed": 2000,
-      "duration": 3
+      "duration": 3,
+      "format": "h264",
+      "quality": "high",
+      "auto_exposure": false,
+      "use_cases": ["General recording", "Maximum detail", "Normal motion"]
     },
-    "slow_motion": {
-      "name": "Slow Motion (120 FPS)",
-      "description": "Half resolution, 2x slow-mo - balanced quality & speed",
+    "slow_motion_120fps": {
+      "name": "Slow Motion - 120 FPS",
+      "description": "Half resolution (728x544) - 2x slow-mo, balanced quality",
+      "category": "Slow Motion",
       "width": 728,
       "height": 544,
       "fps": 120,
       "shutter_speed": 1000,
-      "duration": 3
+      "duration": 3,
+      "format": "h264",
+      "quality": "high",
+      "auto_exposure": false,
+      "use_cases": ["Golf swings", "Fast action", "General slow motion"]
     },
-    "ultra_slow_motion": {
-      "name": "Ultra Slow Motion (240 FPS)",
-      "description": "Quarter resolution, 4x slow-mo - extreme slow motion",
+    "ultra_slow_240fps": {
+      "name": "Ultra Slow - 240 FPS",
+      "description": "Quarter resolution (512x384) - 4x slow-mo for impacts",
+      "category": "Slow Motion",
       "width": 512,
       "height": 384,
       "fps": 240,
       "shutter_speed": 500,
-      "duration": 2
+      "duration": 2,
+      "format": "h264",
+      "quality": "high",
+      "auto_exposure": false,
+      "use_cases": ["Golf ball impact", "Critical moments", "Fine detail analysis"]
     },
-    "extreme_slow_motion": {
-      "name": "Extreme Slow Motion (400+ FPS)",
-      "description": "Very small frame, 6-7x slow-mo - maximum speed",
-      "width": 672,
-      "height": 128,
+    "high_speed_400fps": {
+      "name": "High Speed - 400 FPS",
+      "description": "Cinematic letterbox (688x136) - 13x slow-mo, excellent balance",
+      "category": "High Speed",
+      "width": 688,
+      "height": 136,
       "fps": 400,
-      "shutter_speed": 250,
-      "duration": 2
+      "shutter_speed": 5000,
+      "duration": 2,
+      "format": "h264",
+      "quality": "high",
+      "auto_exposure": false,
+      "tested": true,
+      "reference": "GScrop: 688x136@400-402fps - 60sec sustained recording confirmed",
+      "use_cases": ["Ball flight tracking", "Club-ball contact", "Extreme slow motion"],
+      "lighting_requirement": "Good lighting recommended"
+    },
+    "extreme_speed_534fps": {
+      "name": "Extreme Speed - 534 FPS",
+      "description": "Ultra-wide letterbox (224x96) - 17.8x slow-mo, detail priority",
+      "category": "High Speed",
+      "width": 224,
+      "height": 96,
+      "fps": 534,
+      "shutter_speed": 5000,
+      "duration": 1,
+      "format": "h264",
+      "quality": "high",
+      "auto_exposure": false,
+      "tested": true,
+      "reference": "GScrop: 224x96@534-536fps confirmed working",
+      "use_cases": ["Maximum slow-mo with horizontal detail", "Ball contact zone"],
+      "lighting_requirement": "Excellent lighting required"
+    },
+    "maximum_speed_536fps_compact": {
+      "name": "Maximum Speed - 536 FPS (Compact)",
+      "description": "Tiny resolution (128x96) - 17.8x slow-mo, rock-solid on Pi4B",
+      "category": "High Speed",
+      "width": 128,
+      "height": 96,
+      "fps": 536,
+      "shutter_speed": 5000,
+      "duration": 1,
+      "format": "h264",
+      "quality": "high",
+      "auto_exposure": false,
+      "tested": true,
+      "reference": "GScrop: 128x96@536fps frameskip-free on Pi4B",
+      "use_cases": ["Absolute maximum speed", "Minimal resolution"],
+      "lighting_requirement": "Excellent lighting required"
+    },
+    "maximum_speed_536fps_wide": {
+      "name": "Maximum Speed - 536 FPS (Wide)",
+      "description": "Wide letterbox (320x96) - 17.8x slow-mo, Pi5 optimized",
+      "category": "High Speed",
+      "width": 320,
+      "height": 96,
+      "fps": 536,
+      "shutter_speed": 5000,
+      "duration": 1,
+      "format": "h264",
+      "quality": "high",
+      "auto_exposure": false,
+      "tested": true,
+      "reference": "GScrop: 320x96@536fps confirmed working on Pi5",
+      "use_cases": ["Maximum speed with better horizontal coverage", "Pi5 only"],
+      "lighting_requirement": "Excellent lighting required",
+      "hardware_requirement": "Raspberry Pi 5 recommended"
     }
   },
-  "recommended": {
-    "golf_impact": "ultra_slow_motion",
-    "golf_swing": "slow_motion",
-    "general_use": "standard"
+  "categories": {
+    "Standard": {
+      "description": "Normal speed recording for general use",
+      "icon": "video"
+    },
+    "Slow Motion": {
+      "description": "2x-4x slow motion for detailed motion analysis",
+      "icon": "slow_motion_video"
+    },
+    "High Speed": {
+      "description": "13x-18x extreme slow motion for critical impact analysis",
+      "icon": "speed"
+    }
+  },
+  "recommended_use_cases": {
+    "golf_full_swing": "slow_motion_120fps",
+    "golf_ball_impact": "ultra_slow_240fps",
+    "golf_ball_flight": "high_speed_400fps",
+    "extreme_analysis": "extreme_speed_534fps",
+    "general_recording": "standard_60fps"
+  },
+  "hardware_notes": {
+    "imx296_sensor": "Native resolution 1456x1088, max 120fps full frame",
+    "high_speed_modes": "Require center crop and reduced resolution",
+    "lighting": "High-speed modes (400fps+) require excellent lighting due to fast shutter",
+    "shutter_speed": "Fast shutter (5000μs = 1/200s) reduces motion blur but needs more light"
   }
 }
